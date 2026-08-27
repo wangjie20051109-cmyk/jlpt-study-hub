@@ -1,0 +1,49 @@
+name: Generate JLPT Audio
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "audio/**"
+      - "audio_manifest.js"
+      - "audio_tasks.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jlpt-audio
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build audio tasks
+        run: node tools/build_audio_tasks.mjs
+      - name: Install Edge TTS
+        run: pip install edge-tts
+      - name: Generate MP3 files
+        run: python tools/generate_audio.py
+      - name: Commit generated audio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audio audio_manifest.js audio_tasks.json
+          if git diff --cached --quiet; then
+            echo "No audio changes"
+          else
+            git commit -m "Generate static listening and podcast audio"
+            git push
+          fi
