@@ -1,0 +1,23 @@
+window.applyContentPatch=function(h){
+const KMAP={"わたし":"私","ぼく":"僕","きょう":"今日","あした":"明日","あさって":"明後日","きのう":"昨日","おととい":"一昨日","ことし":"今年","らいねん":"来年","きょねん":"去年","こんげつ":"今月","らいげつ":"来月","せんげつ":"先月","こんしゅう":"今週","らいしゅう":"来週","せんしゅう":"先週","いま":"今","ひと":"人","こども":"子供","おとな":"大人","ともだち":"友達","かぞく":"家族","おとうさん":"お父さん","おかあさん":"お母さん","おにいさん":"お兄さん","おねえさん":"お姉さん","おとうと":"弟","いもうと":"妹","がっこう":"学校","せんせい":"先生","がくせい":"学生","だいがく":"大学","えき":"駅","でんしゃ":"電車","くるま":"車","みち":"道","いえ":"家","へや":"部屋","まど":"窓","かぎ":"鍵","つくえ":"机","いす":"椅子","ほん":"本","じしょ":"辞書","しごと":"仕事","かいしゃ":"会社","かいぎ":"会議","じかん":"時間","でんわ":"電話","けいたい":"携帯","さいふ":"財布","かさ":"傘","くすり":"薬","びょういん":"病院","いしゃ":"医者","みず":"水","おゆ":"お湯","ごはん":"御飯","あさごはん":"朝御飯","ひるごはん":"昼御飯","ばんごはん":"晩御飯","たまご":"卵","やさい":"野菜","さかな":"魚","にく":"肉","くだもの":"果物","のみもの":"飲み物","たべもの":"食べ物","もの":"物","かいもの":"買い物","にもつ":"荷物","てんき":"天気","あめ":"雨","ゆき":"雪","かぜ":"風","そと":"外","なか":"中","うえ":"上","した":"下","みぎ":"右","ひだり":"左","まえ":"前","うしろ":"後ろ","ちかく":"近く","とおく":"遠く","ところ":"所","ばしょ":"場所","ことば":"言葉","はなし":"話","きもち":"気持ち","からだ":"体","あたま":"頭","かお":"顔","て":"手","あし":"足","め":"目","みみ":"耳","くち":"口","は":"歯","もっぱら":"専ら","あえて":"敢えて"};
+const add=`// 主词条汉字优先：常用且明确的汉字表记放在主行，读音保留在平假名行
+const KANJI_STATIC=${JSON.stringify(KMAP)};
+const KANJI_DYNAMIC=new Map();let KANJI_INDEX_READY=false;
+function hasKanjiText(s=''){return /[一-龯々〆ヵヶ]/.test(String(s))}
+function normKanaText(s=''){return String(s).replace(/[・\\s]/g,'').trim()}
+function standardWord(w='',k=''){w=String(w||'').trim();k=String(k||'').trim();if(!w)return w;if(hasKanjiText(w))return w;let key=normKanaText(w),r=normKanaText(k||w);if(KANJI_STATIC[key])return KANJI_STATIC[key];let a=KANJI_DYNAMIC.get(r);if(a&&a.size===1)return [...a][0];return w}
+async function loadKanjiIndex(){if(KANJI_INDEX_READY)return;try{let r=await fetch('https://raw.githubusercontent.com/lxl66566/Japanese-Chinese-thesaurus/refs/heads/main/final.json',{cache:'force-cache'});if(!r.ok)return;let cn=await r.json();for(const [w,def] of Object.entries(cn)){if(!hasKanjiText(w))continue;let m=String(def).match(/^\\(([^)]+)\\)/);if(!m)continue;let rd=normKanaText(m[1].replace(/[0-9０-９]+$/,''));if(!rd)continue;if(!KANJI_DYNAMIC.has(rd))KANJI_DYNAMIC.set(rd,new Set());KANJI_DYNAMIC.get(rd).add(w)}KANJI_INDEX_READY=true;if(typeof vrender==='function')vrender();if(typeof dRender==='function'&&typeof DREADY!=='undefined'&&DREADY)dRender()}catch(e){}}
+`;
+h=h.replace('// 单词学习：N5～N1 完整分级词库',add+'// 单词学习：N5～N1 完整分级词库');
+h=h.replace("$('vjp').textContent=x[2]","$('vjp').textContent=standardWord(x[2],x[3])");
+h=h.replace("$('djp').textContent=x.w","$('djp').textContent=standardWord(x.w,x.k)");
+h=h.replace('每个等级加载完整重点词表；核心精讲词优先显示中文、词性和例句，其余完整词库保留原始释义与例句。','每个等级加载完整重点词表；主词条优先使用常用汉字表记，下一行固定显示平假名读音。核心精讲词优先显示中文、词性和例句。');
+const podAdd=`// 长播客保护层：把现有分级内容组合成长篇输入，避免以后更新词库/语法时又退回短播客
+function enrichPodcasts(){let old=[...P],levels=['N5','N4','N3','N2','N1','生活'],made=[];for(const lv of levels){let base=old.find(x=>x[0]===lv);if(!base)continue;let chunks=[[base[2],base[3],base[4]]];if(lv!=='生活'){for(const x of R.filter(x=>x[0]===lv))chunks.push([x[3],x[4],x[5]]);for(const x of V_BASE.filter(x=>x[0]===lv))chunks.push([x[6],x[7],x[8]]);for(const x of G_CORE.filter(x=>x[0]===lv))chunks.push([x[4],x[5],x[6]]);for(const x of L.filter(x=>x[0]===lv))chunks.push([x[2],x[3],x[4]])}else{for(const x of L.filter(x=>x[0]==='生活'))chunks.push([x[2],x[3],x[4]]);for(const x of V_BASE.filter(x=>['生活','购物','交通','家务','厨房','收纳','快递','朋友'].includes(x[1])).slice(0,34))chunks.push([x[6],x[7],x[8]])}let half=Math.ceil(chunks.length/2),groups=[chunks.slice(0,half),chunks.slice(half)];groups.forEach((g,i)=>{if(!g.length)return;let head=i===0?base[1]+'・長篇①':'総合入力・長篇②';let jp='今日は一つの場面だけでなく、関連する表現を続けて聞きます。\\n\\n'+g.map((c,n)=>'【場面'+(n+1)+'】'+c[0]).join('\\n\\n');let ka='きょうは ひとつの ばめんだけでなく、かんれんする ひょうげんを つづけて ききます。\\n\\n'+g.map((c,n)=>'【ばめん'+(n+1)+'】'+c[1]).join('\\n\\n');let zh='今天不只听一个场景，而是连续听相关表达。\\n\\n'+g.map((c,n)=>'【场景'+(n+1)+'】'+c[2]).join('\\n\\n');made.push([lv,head,jp,ka,zh,'长篇综合输入：词汇＋语法＋听力＋阅读素材连续整合，适合跟读和语感训练。'])})}P.splice(0,P.length,...made)}
+enrichPodcasts();
+`;
+h=h.replace('// 播客',podAdd+'// 播客');
+h=h.replace('播客不出题，只负责长一点的自然输入和跟读。','播客不出题，已恢复成长篇综合输入；每个等级提供两篇长篇，整合词汇、语法、听力和阅读材料。');
+h=h.replace('语感训练・无题','长篇语感训练・无题');
+h=h.replace("document.querySelectorAll('.nav button').forEach","loadKanjiIndex();document.querySelectorAll('.nav button').forEach");
+return h};
