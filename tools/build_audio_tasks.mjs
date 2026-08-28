@@ -1,9 +1,11 @@
 import fs from 'fs';
 import zlib from 'zlib';
 import vm from 'vm';
-
 const parts=['s0.txt','s1.txt','s2.txt','s3.txt','s4.txt'].map(f=>fs.readFileSync(f,'utf8').trim()).join('');
 const html=zlib.gunzipSync(Buffer.from(parts,'base64')).toString('utf8');
+for(const f of ['podcast_themes_1.js','podcast_themes_2.js','podcast_themes_3.js','podcast_catalog.js']){
+  vm.runInThisContext(fs.readFileSync(f,'utf8'),{filename:f});
+}
 
 function extractArray(name){
   const re=new RegExp('(?:const|let|var)\\s+'+name+'\\s*=\\s*');
@@ -28,54 +30,28 @@ const G_CORE=extractArray('G_CORE');
 function fnv1a(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return (h>>>0).toString(16).padStart(8,'0')}
 
 const tasks=[];
-function add(kind,level,title,text){
+function add(kind,level,title,text,category=''){
   text=String(text||'').trim(); if(!text)return;
   const hash=fnv1a(text), file=`audio/${kind}-${hash}.mp3`;
-  if(!tasks.some(x=>x.hash===hash))tasks.push({hash,kind,level,title,text,file});
+  const url=`https://cdn.jsdelivr.net/gh/wangjie20051109-cmyk/jlpt-study-hub@main/${file}`;
+  if(!tasks.some(x=>x.hash===hash))tasks.push({hash,kind,level,title,category,text,file,url});
 }
 
-for(const x of L){ if(Array.isArray(x)) add('listening',x[0]||'',x[1]||'听力',x[2]||''); }
+for(const x of L){ if(Array.isArray(x)) add('listening',x[0]||'',x[1]||'听力',x[2]||'',x[1]||''); }
 
-const levels=['N5','N4','N3','N2','N1','生活'];
-const EPISODES=8;
-for(const lv of levels){
-  const base=P.find(x=>x[0]===lv); if(!base)continue;
-  let chunks=[[base[2],base[3],base[4]]];
-  if(lv!=='生活'){
-    for(const x of R.filter(x=>x[0]===lv))chunks.push([x[3],x[4],x[5]]);
-    for(const x of V_BASE.filter(x=>x[0]===lv))chunks.push([x[6],x[7],x[8]]);
-    for(const x of G_CORE.filter(x=>x[0]===lv))chunks.push([x[4],x[5],x[6]]);
-    for(const x of L.filter(x=>x[0]===lv))chunks.push([x[2],x[3],x[4]]);
-  }else{
-    for(const x of L.filter(x=>x[0]==='生活'))chunks.push([x[2],x[3],x[4]]);
-    for(const x of V_BASE.slice(0,40))chunks.push([x[6],x[7],x[8]]);
-  }
-  chunks=chunks.filter(c=>c&&c[0]);
-  if(!chunks.length)continue;
-
-  const addEpisode=(g,idx)=>{
-    if(!g.length)return;
-    const head=(idx===0?base[1]:'総合入力')+`・长播客 ${idx+1} / ${EPISODES}`;
-    const jp='今日は、自然な日本語を長く聞く練習をします。\n\n'+g.map((c,n)=>`【場面${n+1}】 ${c[0]}`).join('\n\n');
-    add('podcast',lv,head,jp);
-  };
-
-  // Preserve the exact original three episode texts so existing MP3 hashes stay valid.
-  const oldSize=Math.max(1,Math.ceil(chunks.length/3));
-  for(let gi=0;gi<3;gi++)addEpisode(chunks.slice(gi*oldSize,(gi+1)*oldSize),gi);
-
-  // Add five new episodes without changing the original three.
-  const extraSize=Math.min(chunks.length,Math.max(12,Math.ceil(chunks.length/5)));
-  for(let ei=0;ei<5;ei++){
-    const start=Math.floor(ei*chunks.length/5),g=[];
-    for(let k=0;k<extraSize;k++)g.push(chunks[(start+k)%chunks.length]);
-    addEpisode(g,ei+3);
-  }
+if(!globalThis.JLPTPodcastCatalog)throw new Error('Missing JLPTPodcastCatalog');
+const catalog=globalThis.JLPTPodcastCatalog.build({P,R,V_BASE,G_CORE,L});
+for(const x of catalog){
+  if(Array.isArray(x))add('podcast',x[0]||'',x[1]||'播客',x[2]||'',x[6]||'综合');
 }
 
 fs.mkdirSync('audio',{recursive:true});
 fs.writeFileSync('audio_tasks.json',JSON.stringify(tasks,null,2));
-const manifest=Object.fromEntries(tasks.map(x=>[x.hash,x.file]));
-const meta=Object.fromEntries(tasks.map(x=>[x.hash,{kind:x.kind,level:x.level,title:x.title}]));
+const manifest=Object.fromEntries(tasks.map(x=>[x.hash,x.url]));
+const meta=Object.fromEntries(tasks.map(x=>[x.hash,{kind:x.kind,level:x.level,title:x.title,category:x.category}]));
 fs.writeFileSync('audio_manifest.js','window.STATIC_AUDIO_MANIFEST='+JSON.stringify(manifest)+';\nwindow.STATIC_AUDIO_META='+JSON.stringify(meta)+';\n');
-console.log(`Prepared ${tasks.length} static audio tasks (${L.length} listening entries, ${EPISODES} podcasts per level; original three preserved).`);
+
+const counts={};
+for(const x of catalog)counts[x[0]]=(counts[x[0]]||0)+1;
+console.log('Podcast catalog counts:',counts);
+console.log(`Prepared ${tasks.length} static audio tasks (${L.length} listening entries + ${catalog.length} podcast entries).`);
