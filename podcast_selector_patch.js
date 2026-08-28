@@ -17,7 +17,7 @@ try{
  @media(max-width:560px){#peEpisodes{grid-template-columns:repeat(4,minmax(0,1fr))}#podcastEpisodeHub{padding:12px}#peActions button{flex:1;min-width:120px}}
  </style>`;
  h=h.replace('</head>',css+'</head>');
- const js=`<script data-podcast-selector="20260828-2">
+ const js=`<script data-podcast-selector="20260828-3">
  (function(){
   function hash(s){let h=0x811c9dc5;s=String(s||'').trim();for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return (h>>>0).toString(16).padStart(8,'0')}
   function init(){
@@ -29,8 +29,8 @@ try{
    var hub=document.createElement('div');
    hub.id='podcastEpisodeHub';
    hub.innerHTML='<div class="pe-head"><b>🎙️ 播客选集</b><select id="peLevel"></select><span id="peCount" style="opacity:.75"></span></div><div id="peEpisodes"></div><h2 id="peTitle"></h2><div id="peMeta"></div><div id="peJp"></div><div id="peActions"><button type="button" id="pePlay">▶ 播放 MP3</button><button type="button" id="peKanaBtn">あ 平假名</button><button type="button" id="peZhBtn">中文翻译</button></div><div id="peStatus">请选择一篇播客</div><div id="peKana"></div><div id="peZh"></div>';
-   if(oldCard&&oldCard!==section){oldCard.parentNode.insertBefore(hub,oldCard);oldCard.style.display='none';}
-   else if(section){section.insertBefore(hub,section.firstChild);}
+   if(oldCard&&oldCard.parentNode)oldCard.parentNode.insertBefore(hub,oldCard);
+   else if(section)section.insertBefore(hub,section.firstChild);
    else document.body.appendChild(hub);
    var levels=['N5','N4','N3','N2','N1','生活'];
    var sel=document.getElementById('peLevel');levels.forEach(function(l){if(P.some(function(x){return x[0]===l})){var o=document.createElement('option');o.value=l;o.textContent=l;sel.appendChild(o)}});
@@ -69,6 +69,7 @@ try{
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
   setTimeout(init,100);setTimeout(init,700);
+  try{new MutationObserver(function(){if(!document.getElementById('podcastEpisodeHub'))init()}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
  })();
  <\/script>`;
  return h.replace('</body>',js+'</body>');
