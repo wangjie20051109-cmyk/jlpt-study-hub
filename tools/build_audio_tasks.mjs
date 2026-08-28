@@ -12,7 +12,7 @@ function extractArray(name){
   let i=html.indexOf('[',m.index+m[0].length), depth=0, quote='', esc=false, end=-1;
   for(;i<html.length;i++){
     const c=html[i];
-    if(quote){ if(esc){esc=false;continue} if(c==='\\\\'){esc=true;continue} if(c===quote)quote=''; continue; }
+    if(quote){ if(esc){esc=false;continue} if(c==='\\'){esc=true;continue} if(c===quote)quote=''; continue; }
     if(c==='"'||c==="'"||c==='`'){quote=c;continue}
     if(c==='[')depth++; else if(c===']'){depth--; if(depth===0){end=i;break}}
   }
@@ -38,6 +38,7 @@ function add(kind,level,title,text){
 for(const x of L){ if(Array.isArray(x)) add('listening',x[0]||'',x[1]||'听力',x[2]||''); }
 
 const levels=['N5','N4','N3','N2','N1','生活'];
+const EPISODES=8;
 for(const lv of levels){
   const base=P.find(x=>x[0]===lv); if(!base)continue;
   let chunks=[[base[2],base[3],base[4]]];
@@ -48,13 +49,15 @@ for(const lv of levels){
     for(const x of L.filter(x=>x[0]===lv))chunks.push([x[2],x[3],x[4]]);
   }else{
     for(const x of L.filter(x=>x[0]==='生活'))chunks.push([x[2],x[3],x[4]]);
-    for(const x of V_BASE.slice(0,40))chunks.push([x[6],x[7],x[8]]);
+    for(const x of V_BASE.slice(0,80))chunks.push([x[6],x[7],x[8]]);
   }
   chunks=chunks.filter(c=>c&&c[0]);
-  const size=Math.max(1,Math.ceil(chunks.length/3));
-  for(let gi=0;gi<3;gi++){
-    const g=chunks.slice(gi*size,(gi+1)*size); if(!g.length)continue;
-    const head=(gi===0?base[1]:'総合入力')+'・長篇'+(gi+1);
+  if(!chunks.length)continue;
+  const windowSize=Math.min(chunks.length,Math.max(18,Math.ceil(chunks.length/3)));
+  for(let gi=0;gi<EPISODES;gi++){
+    const start=Math.floor(gi*chunks.length/EPISODES),g=[];
+    for(let k=0;k<windowSize;k++)g.push(chunks[(start+k)%chunks.length]);
+    const head=(gi===0?base[1]:'総合入力')+`・长播客 ${gi+1} / ${EPISODES}`;
     const jp='今日は、自然な日本語を長く聞く練習をします。\n\n'+g.map((c,n)=>`【場面${n+1}】 ${c[0]}`).join('\n\n');
     add('podcast',lv,head,jp);
   }
@@ -65,4 +68,4 @@ fs.writeFileSync('audio_tasks.json',JSON.stringify(tasks,null,2));
 const manifest=Object.fromEntries(tasks.map(x=>[x.hash,x.file]));
 const meta=Object.fromEntries(tasks.map(x=>[x.hash,{kind:x.kind,level:x.level,title:x.title}]));
 fs.writeFileSync('audio_manifest.js','window.STATIC_AUDIO_MANIFEST='+JSON.stringify(manifest)+';\nwindow.STATIC_AUDIO_META='+JSON.stringify(meta)+';\n');
-console.log(`Prepared ${tasks.length} static audio tasks (${L.length} listening entries).`);
+console.log(`Prepared ${tasks.length} static audio tasks (${L.length} listening entries, ${EPISODES} podcasts per level).`);
