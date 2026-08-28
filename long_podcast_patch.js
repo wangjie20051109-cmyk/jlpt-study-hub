@@ -5,6 +5,10 @@ const add=`// 独立长播客：只扩充播客数据，不修改单词/语法�
 if(h.includes('// 播客'))h=h.replace('// 播客',add+'// 播客');
 h=h.replace('播客不出题，只负责长一点的自然输入和跟读。','播客不出题，改成长篇自然输入；每个等级提供多篇长篇，适合连续播放和后台听。');
 h=h.replace(/语感训练・无题/g,'长篇语感训练・无题');
+const oldReveal="$('pr').onclick=()=>$('pa').classList.toggle('show');";
+const newReveal=`function bindPodcastTranslationButton(){try{const b=document.getElementById('pr'),a=document.getElementById('pa');if(!b||!a)return;b.type='button';b.onclick=function(ev){if(ev)ev.preventDefault();const open=window.getComputedStyle(a).display!=='none';a.classList.toggle('show',!open);a.style.display=open?'none':'block';b.textContent=open?'平假名＋中文':'🙈 隐藏平假名＋中文';};}catch(e){}}bindPodcastTranslationButton();`;
+if(h.includes(oldReveal))h=h.replace(oldReveal,newReveal);
+else if(h.includes('// 阅读'))h=h.replace('// 阅读',newReveal+'// 阅读');
 return h;
 }catch(e){return h}
 };
