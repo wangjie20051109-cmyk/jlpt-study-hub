@@ -17,11 +17,11 @@ try{
  @media(max-width:560px){#peEpisodes{grid-template-columns:repeat(4,minmax(0,1fr))}#podcastEpisodeHub{padding:12px}#peActions button{flex:1;min-width:120px}}
  </style>`;
  h=h.replace('</head>',css+'</head>');
- const js=`<script data-podcast-selector="20260828-1">
+ const js=`<script data-podcast-selector="20260828-2">
  (function(){
   function hash(s){let h=0x811c9dc5;s=String(s||'').trim();for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return (h>>>0).toString(16).padStart(8,'0')}
   function init(){
-   if(document.getElementById('podcastEpisodeHub')||!window.P)return;
+   if(document.getElementById('podcastEpisodeHub')||typeof P==='undefined')return;
    var oldPlay=document.getElementById('pp');
    if(!oldPlay)return;
    var section=oldPlay.closest('section')||oldPlay.closest('.page')||oldPlay.parentElement;
@@ -33,12 +33,11 @@ try{
    else if(section){section.insertBefore(hub,section.firstChild);}
    else document.body.appendChild(hub);
    var levels=['N5','N4','N3','N2','N1','生活'];
-   var sel=document.getElementById('peLevel');levels.forEach(function(l){if(P.some(x=>x[0]===l)){var o=document.createElement('option');o.value=l;o.textContent=l;sel.appendChild(o)}});
-   // 尽量沿用旧播客当前等级；找不到就优先 N3
-   var initial='N3';try{var txt=(oldCard&&oldCard.textContent)||'';var f=levels.find(l=>txt.includes(l));if(f)initial=f}catch(e){}
-   if([].some.call(sel.options,o=>o.value===initial))sel.value=initial;
+   var sel=document.getElementById('peLevel');levels.forEach(function(l){if(P.some(function(x){return x[0]===l})){var o=document.createElement('option');o.value=l;o.textContent=l;sel.appendChild(o)}});
+   var initial='N3';try{var txt=(oldCard&&oldCard.textContent)||'';var f=levels.find(function(l){return txt.includes(l)});if(f)initial=f}catch(e){}
+   for(var oi=0;oi<sel.options.length;oi++){if(sel.options[oi].value===initial){sel.value=initial;break}}
    var current=null;
-   function episodes(){return P.filter(x=>x[0]===sel.value).slice(0,8)}
+   function episodes(){return P.filter(function(x){return x[0]===sel.value}).slice(0,8)}
    function renderTabs(active){
     var eps=episodes(),wrap=document.getElementById('peEpisodes');wrap.innerHTML='';
     document.getElementById('peCount').textContent='共 '+eps.length+' 篇';
@@ -61,8 +60,8 @@ try{
     if(!current)return;var hs=hash(current[2]),path=window.STATIC_AUDIO_MANIFEST&&window.STATIC_AUDIO_MANIFEST[hs];
     if(!path){document.getElementById('peStatus').textContent='⏳ MP3 还没发布完成，等生成结束后刷新即可';return;}
     document.getElementById('peStatus').textContent='▶ 正在播放本站 MP3';
-    if(typeof window.playBackgroundJapanese==='function')window.playBackgroundJapanese(current[2],.86,current[1]||'JLPT 长播客');
-    else if(typeof window.sp==='function')window.sp(current[2],.86);
+    if(typeof playBackgroundJapanese==='function')playBackgroundJapanese(current[2],.86,current[1]||'JLPT 长播客');
+    else if(typeof sp==='function')sp(current[2],.86);
    };
    document.getElementById('peKanaBtn').onclick=function(){var p=document.getElementById('peKana');p.style.display=getComputedStyle(p).display==='none'?'block':'none'};
    document.getElementById('peZhBtn').onclick=function(){var p=document.getElementById('peZh');p.style.display=getComputedStyle(p).display==='none'?'block':'none'};
