@@ -3,7 +3,7 @@ import zlib from 'zlib';
 import vm from 'vm';
 const parts=['s0.txt','s1.txt','s2.txt','s3.txt','s4.txt'].map(f=>fs.readFileSync(f,'utf8').trim()).join('');
 const html=zlib.gunzipSync(Buffer.from(parts,'base64')).toString('utf8');
-for(const f of ['podcast_themes_1.js','podcast_themes_2.js','podcast_themes_3.js','podcast_catalog.js']){
+for(const f of ['podcast_themes_1.js','podcast_themes_2.js','podcast_themes_3.js','podcast_catalog.js','podcast_scene_fix.js']){
   vm.runInThisContext(fs.readFileSync(f,'utf8'),{filename:f});
 }
 
