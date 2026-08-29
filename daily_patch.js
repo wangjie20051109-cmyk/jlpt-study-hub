@@ -7,7 +7,8 @@ window.applyDailyPatch=function(html){
     html=html.replace('<section id="grammar"',section+'<section id="grammar"');
     html=html.replace('N5 → N1｜单词・语法・刷题・听力・播客・阅读','N5 → N1｜单词・语法・刷题・听力・播客・阅读・日常日语');
     html=html.replace('＋语法学习＋10,000 道刷题中心。','＋语法学习＋10,000 道刷题中心＋日常日语 10K。');
-    const css='<style>.nav{grid-template-columns:repeat(7,1fr)!important}#daily .card{background:#0b1020}@media(max-width:860px){.nav{grid-template-columns:repeat(4,1fr)!important}}@media(max-width:600px){.nav{grid-template-columns:repeat(3,1fr)!important}#daily iframe{min-height:680px!important;height:82vh!important}}</style>';
+    // Keep this patch scoped to the Daily section. Global nav layout is owned by index.html's responsive nav fix.
+    const css='<style>#daily .card{background:#0b1020}@media(max-width:600px){#daily iframe{min-height:680px!important;height:82vh!important}}</style>';
     html=html.replace('</head>',css+'</head>');
     return html;
   }catch(e){return html}
