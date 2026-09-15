@@ -1,0 +1,6 @@
+window.applyGrammarCatalogCore=function(h){try{if(!h||h.includes('GRAMMAR_CATALOG_CORE_0916'))return h;const add=`/* GRAMMAR_CATALOG_CORE_0916: source-aware canonical index; does not change existing grammar IDs/localStorage keys. */
+function grammarCanonicalText(p=''){return String(p||'').normalize('NFKC').replace(/[～〜\\s・／/（）()［］\[\]「」『』]/g,'').replace(/限（かぎ）/g,'限').replace(/際（さい）/g,'際').replace(/先立（さきだ）/g,'先立').replace(/最中（さいちゅう）/g,'最中').toLowerCase()}
+function buildGrammarCatalog(){if(typeof G==='undefined'||!Array.isArray(G))return [];const seen=new Map(),out=[];for(let i=0;i<G.length;i++){const x=G[i];if(!Array.isArray(x)||!x[0]||!x[1])continue;const key=String(x[0]).toUpperCase()+'|'+grammarCanonicalText(x[1]);if(!seen.has(key)){const row=x.slice();row._canonicalKey=key;row._sourceIndex=i;seen.set(key,row);out.push(row)}else{const keep=seen.get(key);keep._aliases=keep._aliases||[];if(String(x[1])!==String(keep[1])&&!keep._aliases.includes(x[1]))keep._aliases.push(x[1]);}}return out}
+window.getGrammarCatalog=function(){return buildGrammarCatalog()};window.getGrammarCatalogCounts=function(){const c={N5:0,N4:0,N3:0,N2:0,N1:0};for(const x of buildGrammarCatalog())if(c[x[0]]!==undefined)c[x[0]]++;return c};
+`;
+if(h.includes('function gf(){'))h=h.replace('function gf(){',add+'function gf(){');return h}catch(e){return h}};
