@@ -1,0 +1,9 @@
+window.applyDynamicContentPatch=function(h){try{if(!h||h.includes('data-dynamic-content="1"'))return h;
+const js=`<script data-dynamic-content="1">(()=>{const SOURCES=[
+{name:'OpenJLPT',kind:'词汇/例句',url:'https://github.com/evanclan/OpenJLPT',note:'N5–N1 开放词汇、汉字与 Tatoeba 例句'},
+{name:'Japanese Language Data',kind:'语法/语料',url:'https://github.com/jkindrix/japanese-language-data',note:'开放聚合语料；语法草稿需复核'},
+{name:'Mimichan',kind:'听力/Shadowing UX',url:'https://github.com/czwsh98/japanese-learning-through-news-and-podcasts',note:'时间轴、逐句跟读、词汇回链设计参考'}
+];
+function mount(){let a=document.getElementById('shadowingHub')||document.getElementById('podcastEpisodeHub');if(!a||document.getElementById('dynamicContentHub'))return;let d=document.createElement('div');d.id='dynamicContentHub';d.style.cssText='margin:16px 0;padding:14px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(255,255,255,.045)';d.innerHTML='<b>🌊 流动内容库</b><p style="opacity:.8;margin:6px 0">把固定死数据逐步改成“来源清单 → 校验 → 去重 → 分级 → 入库”的更新方式。不会直接抓网页版权内容。</p><div id="dynSources"></div><div style="margin-top:9px;font-size:13px;opacity:.75">更新策略：开放许可数据定期同步；语法先进入候选区，复核后才进入正式库；已有学习记录继续按稳定 ID 保存。</div>';d.querySelector('#dynSources').innerHTML=SOURCES.map(x=>'<div style="padding:7px 0;border-top:1px solid rgba(255,255,255,.08)"><b>'+x.name+'</b> · '+x.kind+'<br><span style="font-size:13px;opacity:.78">'+x.note+'</span></div>').join('');a.parentNode.insertBefore(d,a)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();setTimeout(mount,700)})();<\/script>`;
+return h.replace('</body>',js+'</body>')}catch(e){return h}};
