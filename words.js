@@ -69,7 +69,10 @@ function rate(v){
  save();advance();list();
 }
 function openDetail(word){
- if(!word)return;detail=word;const x=get(word.id);
+ if(!word)return;
+ location.href='./word-detail.html?id='+encodeURIComponent(word.id)+'&from='+(current?'study':'list');
+ return;
+ detail=word;const x=get(word.id);
  $('detailName').innerHTML=H.ruby(word.word,word.kana);$('detailKana').textContent=word.kana;$('detailMeaning').textContent=word.meaning;$('detailLevel').textContent=word.level+' · '+(x.mastered?'已掌握':x.seen?'已学':'新词');
  $('detailSave').textContent=x.starred?'★ 已收藏':'☆ 收藏';
  $('detailKnown').textContent=x.mastered?'✓ 已掌握':'✓ 标记掌握';
@@ -96,5 +99,7 @@ $('closeDetail').onclick=closeDetail;$('detailOverlay').onclick=e=>{if(e.target=
 $('detailSpeak').onclick=()=>detail&&H.speak(detail.word);
 $('detailSave').onclick=()=>alterDetail('save');$('detailKnown').onclick=()=>alterDetail('known');
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detail)closeDetail()});
+const params=new URLSearchParams(location.search);
+if(['N2','N3'].includes(params.get('level')))level=params.get('level');
 summary();list();
 })();
