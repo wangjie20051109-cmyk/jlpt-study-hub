@@ -69,7 +69,10 @@ function rate(v){
  save();advance();list();
 }
 function openDetail(word){
- if(!word)return;detail=word;const x=get(word.id);
+ if(!word)return;
+ location.href='./word-detail.html?id='+encodeURIComponent(word.id)+'&from='+(current?'study':'list');
+ return;
+ detail=word;const x=get(word.id);
  $('detailName').innerHTML=H.ruby(word.word,word.kana);$('detailKana').textContent=word.kana;$('detailMeaning').textContent=word.meaning;$('detailLevel').textContent=word.level+' · '+(x.mastered?'已掌握':x.seen?'已学':'新词');
  $('detailSave').textContent=x.starred?'★ 已收藏':'☆ 收藏';
  $('detailKnown').textContent=x.mastered?'✓ 已掌握':'✓ 标记掌握';
@@ -88,7 +91,7 @@ $('setN2').onclick=()=>changeLevel('N2');$('setN3').onclick=()=>changeLevel('N3'
 $('startNew').onclick=()=>start('new');$('startReview').onclick=()=>start('due');$('exitStudy').onclick=closeStudy;
 $('reveal').onclick=()=>{$('studyAnswer').style.display='block';$('rateActions').style.display='grid';$('reveal').style.display='none'};
 $('rateActions').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>rate(b.dataset.rate));
-$('studySpeak').onclick=()=>current&&H.speak(current.word);$('studyMore').onclick=()=>openDetail(current);
+$('studySpeak').onclick=()=>current&&H.speak(current.word);$('studyMore').onclick=()=>openDetail(current);$('studyDetailBtn').onclick=()=>openDetail(current);
 $('searchWords').oninput=()=>{shown=30;list()};
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;shown=30;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));list()});
 $('moreWords').onclick=()=>{shown+=40;list()};
@@ -96,5 +99,7 @@ $('closeDetail').onclick=closeDetail;$('detailOverlay').onclick=e=>{if(e.target=
 $('detailSpeak').onclick=()=>detail&&H.speak(detail.word);
 $('detailSave').onclick=()=>alterDetail('save');$('detailKnown').onclick=()=>alterDetail('known');
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detail)closeDetail()});
+const params=new URLSearchParams(location.search);
+if(['N2','N3'].includes(params.get('level')))level=params.get('level');
 summary();list();
 })();

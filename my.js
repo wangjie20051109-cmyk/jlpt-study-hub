@@ -33,7 +33,7 @@ $('wrongPreview').innerHTML=wrongIds.length?wrongIds.slice(0,8).map(id=>{
  return '<a class="listrow" href="./practice.html?mode=wrong&focus='+encodeURIComponent(id)+'"><div style="flex:1;min-width:0"><div class="name">'+H.safe(info.title)+'</div><div class="desc">'+H.safe(info.label)+' · '+H.safe(info.detail)+'</div></div><span aria-hidden="true">›</span></a>'
 }).join(''):'<div class="empty">目前没有错题记录，去考试模块练几道吧！</div>';
 $('backup').onclick=()=>{
- const data={type:'JLPTStudyHubLearningBackup',version:1,exportedAt:new Date().toISOString(),words:H.read(WK,{items:{},days:{}}),practice:H.read(PK,{answers:{},wrong:{},star:{}})};
+ const data={type:'JLPTStudyHubLearningBackup',version:1,exportedAt:new Date().toISOString(),words:H.read(WK,{items:{},days:{}}),practice:H.read(PK,{answers:{},wrong:{},star:{}}),wordNotes:H.read('jlptWordNotesV1',{})};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='JLPT学习备份-'+H.day()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
@@ -44,7 +44,7 @@ $('restore').onchange=async e=>{
    const data=JSON.parse(await file.text());
    if(data.type!=='JLPTStudyHubLearningBackup'||data.version!==1||!validObj(data.words)||!validObj(data.practice)||!validObj(data.words.items)||!validObj(data.practice.answers)||!validObj(data.practice.wrong)||!validObj(data.practice.star))throw Error('不是有效的JLPT Study Hub备份文件');
    if(!confirm('导入会覆盖当前浏览器的【新背词】和【考试刷题】记录。确定继续吗？'))return;
-   if(!H.write(WK,data.words)||!H.write(PK,data.practice))throw Error('当前浏览器无法保存学习记录');
+   if(!H.write(WK,data.words)||!H.write(PK,data.practice)||(data.wordNotes&&validObj(data.wordNotes)&&!H.write('jlptWordNotesV1',data.wordNotes)))throw Error('当前浏览器无法保存学习记录');
    alert('恢复成功！页面将刷新。');location.reload();
  }catch(err){alert('导入失败：'+err.message)}finally{e.target.value=''}
 };
