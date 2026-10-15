@@ -53,8 +53,8 @@ ruby{ruby-position:over}rt{font-size:.48em;color:#7f8d9c;font-weight:400;user-se
 <header><a href="./" aria-label="返回学习站首页">‹</a><div class="hd"><b>智能刷题 · JLPT Study Hub</b><small>手机刷题 · 假名 · 中文精讲 · 自动错题本</small></div><span class="pill">原创模拟题</span></header>
 <div class="panel">
 <div class="filters"><label>考试等级<select id="level"><option value="N2">N2 · 冲刺</option><option value="N3">N3 · 巩固</option></select></label><label>专项类型<select id="type"><option value="all">综合训练</option><option value="grammar">语法</option><option value="vocab">文字词汇</option></select></label></div>
-<div class="mode" role="group" aria-label="练习模式"><button class="active" data-mode="all">全部题目</button><button data-mode="wrong">❌ 错题重练</button><button data-mode="star">☆ 收藏夹</button></div>
-<div class="summary"><span id="allStat"></span><label><input id="furigana" type="checkbox" checked> 显示假名</label></div>
+<div class="mode" role="group" aria-label="练习模式"><button class="active" data-mode="unseen">📝 未做新题</button><button data-mode="all">全部题目</button><button data-mode="wrong">❌ 错题重练</button><button data-mode="star">☆ 收藏夹</button></div>
+<div class="summary"><span id="allStat"></span><button id="exportWrong" type="button" style="padding:5px 10px;border:1px solid #dae3ef;border-radius:9px;background:white;color:#3f65a3;font-size:12px">↓ 导出错题笔记</button><label><input id="furigana" type="checkbox" checked> 显示假名</label></div>
 </div>
 <div class="panel" id="workspace" aria-live="polite">
 <div class="stats"><span id="counter">1 / 1</span><span id="correctStat">已答 0 · 正确 0</span></div><div class="bar"><i id="progress"></i></div>
@@ -88,46 +88,47 @@ const BANK=[
 ];
 const K='jlptPracticeV2State';
 let saved={answers:{},wrong:{},star:{}};try{const v=JSON.parse(localStorage.getItem(K)||'{}');saved={answers:v.answers||{},wrong:v.wrong||{},star:v.star||{}}}catch(e){}
-let mode='all',idx=0,selected=null;
+let mode='unseen',idx=0,selected=null,justAnsweredId=null;
 const $=id=>document.getElementById(id);
 function persist(){try{localStorage.setItem(K,JSON.stringify(saved))}catch(e){}}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function ruby(s){return esc(s).replace(/\[([^\]|]+)\|([^\]]+)\]/g,'<ruby>$1<rt>$2</rt></ruby>')}
-function pool(){let l=$('level').value,t=$('type').value;return BANK.filter(q=>q.l===l&&(t==='all'||q.t===t)&&(mode==='all'||(mode==='wrong'?saved.wrong[q.id]:saved.star[q.id])))}
+function pool(){let l=$('level').value,t=$('type').value;return BANK.filter(q=>q.l===l&&(t==='all'||q.t===t)&&(mode==='all'||(mode==='unseen'?(!saved.answers[q.id]||q.id===justAnsweredId):(mode==='wrong'?saved.wrong[q.id]:saved.star[q.id]))))}
 function qStat(){let all=Object.values(saved.answers);return {n:all.length,ok:all.filter(x=>x.correct).length}}
 function render(){
 let arr=pool();const s=qStat();
 $('allStat').textContent='累计已做 '+s.n+' 题 · 正确率 '+(s.n?Math.round(s.ok/s.n*100):0)+'% · 错题 '+Object.keys(saved.wrong).filter(x=>saved.wrong[x]).length;
 if(idx>=arr.length)idx=Math.max(0,arr.length-1);
-$('prev').disabled=idx===0||!arr.length;$('next').disabled=idx>=arr.length-1||!arr.length;
+$('prev').disabled=idx===0||!arr.length;$('next').disabled=mode==='unseen'?(!arr.length||(!justAnsweredId&&idx>=arr.length-1)):idx>=arr.length-1||!arr.length;
 $('counter').textContent=arr.length?(idx+1)+' / '+arr.length:'0 / 0';$('progress').style.width=arr.length?((idx+1)/arr.length*100)+'%':'0%';
 $('correctStat').textContent='已做 '+s.n+' · 答对 '+s.ok;
 if(!arr.length){$('qbody').innerHTML='<div class="empty"><b>这里还没有题目</b><p>切回「全部题目」开始练习，答错的题会自动进入错题本。</p></div>';return}
 let q=arr[idx],old=saved.answers[q.id],ans=old?old.selected:null,done=!!old,chosen=done?ans:selected;
 let body='<div class="qmeta"><span class="tag">'+q.l+' · '+(q.t==='grammar'?'语法':'词汇')+'</span><button id="starBtn" class="bookmark '+(saved.star[q.id]?'active':'')+'" aria-label="收藏当前题">'+(saved.star[q.id]?'★':'☆')+'</button></div>'+
-'<div class="qprompt">'+ruby(q.q)+'</div><div class="trans">'+esc(q.zh)+'</div>'+
+'<div class="qprompt">'+ruby(q.q)+'</div>'+(done?'<div class="trans">'+esc(q.zh)+'</div>':'')+
 '<div class="choices">'+q.o.map((o,i)=>{let cls=done?(i===q.a?' correct':i===ans?' wrong':''):(i===chosen?' selected':'');return '<button class="choice'+cls+'" data-answer="'+i+'" '+(done?'disabled':'')+'><span class="num">'+(i+1)+'</span><span class="jp">'+ruby(o[0])+'</span></button>'}).join('')+'</div>'+
 '<div class="action"><button id="submit" class="primary" '+(done||chosen===null?'disabled':'')+'>'+(done?'已提交':'提交答案')+'</button><button id="retry" '+(!done?'disabled':'')+'>↻ 重练</button></div>';
 if(done){body+='<div class="result"><div class="resultTitle '+(old.correct?'good':'bad')+'">'+(old.correct?'✓ 回答正确！':'✕ 回答错误')+' 正确答案：'+(q.a+1)+' '+ruby(q.o[q.a][0])+'</div>'+
 '<h3 class="explainTitle">📖 语法／词汇重点</h3><div class="point"><b>'+esc(q.pattern)+'</b><div style="margin-top:6px;font-size:14px">'+esc(q.tip)+'</div></div>'+
 '<h3 class="explainTitle">四个选项逐个分析</h3><div class="reasons">'+q.o.map((o,i)=>'<div class="reason '+(i===q.a?'good':'')+'"><div class="reasonHead">'+(i===q.a?'✅':'✕')+' '+(i+1)+' '+ruby(o[0])+' · '+esc(o[1])+'</div><p>'+esc(o[2])+'</p></div>').join('')+'</div>'+
-'<h3 class="explainTitle">例句 · 汉字注音</h3><div class="example">'+ruby(q.ex)+'<div style="font-size:13px;color:#65758c">'+esc(q.exzh)+'</div></div>'+
+'<h3 class="explainTitle">例句 · 汉字注音</h3><button id="playEx" type="button" style="border:1px solid #b8dfd4;border-radius:9px;padding:6px 11px;background:#effaf6;color:#168970">🔊 朗读例句</button><div class="example">'+ruby(q.ex)+'<div style="font-size:13px;color:#65758c">'+esc(q.exzh)+'</div></div>'+
 '<h3 class="explainTitle">⚠️ 易混考点</h3><div class="point">'+esc(q.mix)+'</div>'+
 '<div class="tiny" style="margin-top:12px">错题会保留在错题本中，直到你手动选择「已掌握」。</div>'+
 (saved.wrong[q.id]?'<button id="mastered" style="margin-top:12px;padding:9px 13px;border:1px solid #a8d7c9;border-radius:10px;color:#168970;background:#effaf6">✓ 已掌握，移出错题本</button>':'')+'</div>';}
 $('qbody').innerHTML=body;
 document.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',function(){if(done)return;selected=Number(b.dataset.answer);render()}));
 $('starBtn').onclick=()=>{saved.star[q.id]=!saved.star[q.id];persist();render()};
-$('submit').onclick=()=>{if(done||selected===null)return;let correct=selected===q.a;saved.answers[q.id]={selected:selected,correct:correct,at:new Date().toISOString()};if(!correct)saved.wrong[q.id]=true;persist();selected=null;render()};
-$('retry').onclick=()=>{delete saved.answers[q.id];selected=null;persist();render()};
+$('submit').onclick=()=>{if(done||selected===null)return;let correct=selected===q.a;saved.answers[q.id]={selected:selected,correct:correct,at:new Date().toISOString()};if(!correct)saved.wrong[q.id]=true;justAnsweredId=q.id;persist();selected=null;render()};
+$('retry').onclick=()=>{delete saved.answers[q.id];justAnsweredId=null;selected=null;persist();render()};if($('playEx'))$('playEx').onclick=()=>{if(!('speechSynthesis' in window))return alert('当前浏览器不支持日语语音播放');speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(q.ex.replace(/\[([^\]|]+)\|[^\]]+\]/g,'$1'));u.lang='ja-JP';u.rate=.88;speechSynthesis.speak(u)};
 if($('mastered'))$('mastered').onclick=()=>{delete saved.wrong[q.id];persist();render()};
 }
-function reset(){idx=0;selected=null;render()}
+function reset(){idx=0;selected=null;justAnsweredId=null;render()}
 $('level').onchange=reset;$('type').onchange=reset;
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));reset()});
-$('next').onclick=()=>{if(idx<pool().length-1){idx++;selected=null;render()}};
+$('next').onclick=()=>{if(mode==='unseen'){if(justAnsweredId){justAnsweredId=null;idx=0}else if(idx<pool().length-1)idx++;selected=null;render();return}if(idx<pool().length-1){idx++;selected=null;render()}};
 $('prev').onclick=()=>{if(idx>0){idx--;selected=null;render()}};
 $('furigana').onchange=()=>{document.body.classList.toggle('no-ruby',!$('furigana').checked)};
+$('exportWrong').onclick=()=>{const w=BANK.filter(q=>saved.wrong[q.id]);if(!w.length)return alert('目前还没有错题，做错的题会自动收录。');const clean=x=>String(x||'').replace(/\[([^\]|]+)\|[^\]]+\]/g,'$1');const lines=['# JLPT Study Hub · 错题本','', '生成时间：'+new Date().toLocaleString('zh-CN'),''];w.forEach((q,i)=>{lines.push('## '+(i+1)+'. '+q.l+' '+(q.t==='grammar'?'语法':'词汇'),'','题目：'+clean(q.q),'中文：'+q.zh,'接续：'+q.pattern,'说明：'+q.tip,'');q.o.forEach((o,j)=>lines.push((j+1)+'. '+clean(o[0])+' | '+o[1]+' | '+o[2]+(j===q.a?' ✓':'')));lines.push('','例句：'+clean(q.ex),'例句翻译：'+q.exzh,'易混点：'+q.mix,'','---','')});const blob=new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='JLPT错题本.md';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 render();
 })();
 </script>
