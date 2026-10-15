@@ -1,0 +1,17 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f7f8fa"><title>对策训练 · JLPT Study Hub</title><link rel="stylesheet" href="./site.css?v=20261016m1"></head><body>
+<main class="shell">
+<header class="topline"><a href="./" class="back" aria-label="返回首页">‹</a><div class="brand"><div><strong>专项对策</strong><small>按能力模块逐个突破</small></div></div><span class="grow"></span><span class="chip">JLPT 对策</span></header>
+<div class="hero hero-warm"><div class="eyebrow">PREPARE FOR JLPT</div><h1><span style="color:#ee3220">N2</span> 冲刺训练</h1><p>根据考试类型选择训练；词汇、语法、阅读、听力不再挤在一个页面。</p><div class="segment" style="margin-top:18px"><button class="active" data-lv="N2">N2 考前冲刺</button><button data-lv="N3">N3 基础补强</button></div></div>
+<div class="section-title"><h2>四大专项</h2><small id="levelTag">当前：N2</small></div>
+<div class="subject-grid">
+<article class="card subject"><div class="emoji">🅰️</div><b>文字词汇</b><p>词汇认读、假名、常见易混词，做完可继续背词复习。</p><div class="actions" style="width:100%"><a id="vocabQuiz" href="./practice.html?level=N2&type=reading" class="btn primary small">专项试题</a><a href="./words.html" class="btn small">背单词</a></div></article>
+<article class="card subject"><div class="emoji">🧩</div><b>语法</b><p>四选一答题、语法接续、中文解释、每项排除理由。</p><div class="actions" style="width:100%"><a id="grammarQuiz" href="./practice.html?level=N2&type=grammar" class="btn primary small">专项试题</a><a href="./classic.html?section=grammar" class="btn small">语法库</a></div></article>
+<article class="card subject"><div class="emoji">📚</div><b>阅读理解</b><p>利用原网站现有阅读模块，训练理解文章与抓关键句。</p><div class="actions" style="width:100%"><a href="./classic.html?section=reading" class="btn primary small">进入阅读练习</a></div></article>
+<article class="card subject"><div class="emoji">🎧</div><b>听力训练</b><p>原有听力、跟读和音频练习继续保留，可以反复练习。</p><div class="actions" style="width:100%"><a href="./classic.html?section=listening" class="btn primary small">进入听力练习</a></div></article>
+</div>
+<section class="card" style="margin-top:20px"><h3>今天建议怎么学？</h3><div class="list"><div class="listrow"><span class="chip">15分钟</span><div><b>先背词</b><div class="desc">新词10个 + 复习到期词</div></div></div><div class="listrow"><span class="chip">20分钟</span><div><b>语法专项</b><div class="desc">先独立选择答案，提交后看四个选项原因</div></div></div><div class="listrow"><span class="chip">25分钟</span><div><b>听力与阅读</b><div class="desc">用原网站现有音频与阅读训练，记录错题</div></div></div></div></section>
+<div class="actions" style="margin-top:18px"><a href="./classic.html" class="btn ghost">打开经典学习站（全部功能）</a></div>
+<p class="notice">词汇模块题库为开源词表生成的模拟题。阅读和听力保留原网站已有训练内容，尚未扩充至与词汇相同的题量。</p>
+</main><script src="./site.js?v=20261016m1"></script><script>
+(function(){const buttons=[...document.querySelectorAll('[data-lv]')];let lv='N2';function draw(){buttons.forEach(b=>b.classList.toggle('active',b.dataset.lv===lv));document.getElementById('levelTag').textContent='当前：'+lv;document.querySelector('.hero h1').innerHTML='<span style="color:#ee3220">'+lv+'</span> '+(lv==='N2'?'冲刺训练':'基础补强');document.getElementById('vocabQuiz').href='./practice.html?level='+lv+'&type=reading';document.getElementById('grammarQuiz').href='./practice.html?level='+lv+'&type=grammar';}buttons.forEach(b=>b.onclick=()=>{lv=b.dataset.lv;draw()});draw()})();
+</script></body></html>
