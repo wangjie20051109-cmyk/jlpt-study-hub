@@ -91,7 +91,7 @@ $('setN2').onclick=()=>changeLevel('N2');$('setN3').onclick=()=>changeLevel('N3'
 $('startNew').onclick=()=>start('new');$('startReview').onclick=()=>start('due');$('exitStudy').onclick=closeStudy;
 $('reveal').onclick=()=>{$('studyAnswer').style.display='block';$('rateActions').style.display='grid';$('reveal').style.display='none'};
 $('rateActions').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>rate(b.dataset.rate));
-$('studySpeak').onclick=()=>current&&H.speak(current.word);$('studyMore').onclick=()=>openDetail(current);
+$('studySpeak').onclick=()=>current&&H.speak(current.word);$('studyMore').onclick=()=>openDetail(current);$('studyDetailBtn').onclick=()=>openDetail(current);
 $('searchWords').oninput=()=>{shown=30;list()};
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;shown=30;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));list()});
 $('moreWords').onclick=()=>{shown+=40;list()};
