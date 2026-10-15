@@ -52,7 +52,7 @@ ruby{ruby-position:over}rt{font-size:.48em;color:#7f8d9c;font-weight:400;user-se
 </head><body><div class="layout">
 <header><a href="./" aria-label="返回学习站首页">‹</a><div class="hd"><b>智能刷题 · JLPT Study Hub</b><small>手机刷题 · 假名 · 中文精讲 · 自动错题本</small></div><span class="pill">原创模拟题</span></header>
 <div class="panel">
-<div class="filters"><label>考试等级<select id="level"><option value="N2">N2 · 冲刺</option><option value="N3">N3 · 巩固</option></select></label><label>专项类型<select id="type"><option value="all">综合训练</option><option value="grammar">语法</option><option value="vocab">文字词汇</option></select></label></div>
+<div class="filters"><label>考试等级<select id="level"><option value="N2">N2 · 冲刺</option><option value="N3">N3 · 巩固</option></select></label><label>专项类型<select id="type"><option value="all">综合训练</option><option value="grammar">语法</option><option value="vocab">原有文字词汇</option><option value="reading">汉字读音（700题）</option><option value="writing">假名选汉字（300题）</option></select></label></div>
 <div class="mode" role="group" aria-label="练习模式"><button class="active" data-mode="unseen">📝 未做新题</button><button data-mode="all">全部题目</button><button data-mode="wrong">❌ 错题重练</button><button data-mode="star">☆ 收藏夹</button></div>
 <div class="summary"><span id="allStat"></span><button id="exportWrong" type="button" style="padding:5px 10px;border:1px solid #dae3ef;border-radius:9px;background:white;color:#3f65a3;font-size:12px">↓ 导出错题笔记</button><label><input id="furigana" type="checkbox" checked> 显示假名</label></div>
 </div>
@@ -60,9 +60,12 @@ ruby{ruby-position:over}rt{font-size:.48em;color:#7f8d9c;font-weight:400;user-se
 <div class="stats"><span id="counter">1 / 1</span><span id="correctStat">已答 0 · 正确 0</span></div><div class="bar"><i id="progress"></i></div>
 <div id="qbody"></div>
 </div>
-<p class="tiny" style="text-align:center">练习题为本站编写的 JLPT 风格模拟题，不冒充官方历年真题。答案记录仅保存在当前浏览器。</p>
+<p class="tiny" style="text-align:center">新增1000道词汇读音／写法题（N2 500＋N3 500），另保留原有18道模拟题。数据来自 <a href="https://github.com/allenlu2009/japanese-learning-datasets" target="_blank" rel="noopener">MIT 开源词表</a>，释义暂提供英文；<a href="./practice-bank-NOTICE.md">来源及授权</a>。并非官方历年真题。学习记录仅保存在当前浏览器。</p>
 </div>
 <div class="navBottom"><div class="wrap"><button id="prev">← 上一题</button><button class="next" id="next">下一题 →</button></div></div>
+<script src="./practice_data_n2.js?v=20261016a"></script>
+<script src="./practice_data_n3.js?v=20261016a"></script>
+<script src="./practice_bulk_runtime.js?v=20261016a"></script>
 <script>
 (function(){
 'use strict';
@@ -86,6 +89,7 @@ const BANK=[
 {id:'n2-11',l:'N2',t:'vocab',q:'[彼|かれ]の[説明|せつめい]は[具体性|ぐたいせい]に（　）、[説得力|せっとくりょく]がなかった。',zh:'他的说明缺乏具体性，没有说服力。',o:[['[欠|か]けて','缺乏……','正确；「～に欠ける」表示缺少必要条件'],['[抜|ぬ]けて','脱落、漏掉','常说「ページが抜ける」而非「具体性に抜ける」'],['[外|はず]れて','脱离、偏离','常说「予想が外れる」而非本句的搭配'],['[離|はな]れて','离开、远离','常说「駅から離れる」，不用于具体性欠缺']],a:0,pattern:'名词＋に欠（か）ける',tip:'形容能力、礼貌、具体性等方面缺少应有的要素，是N2常见搭配。',mix:'「欠ける」缺乏一部分；「抜ける」从某处脱落或遗漏。',ex:'この[計画|けいかく]は[安全性|あんぜんせい]に[欠|か]ける。',exzh:'这个计划缺乏安全性。'},
 {id:'n3-07',l:'N3',t:'vocab',q:'[先生|せんせい]に[作文|さくぶん]の[間違|まちが]いを（　）もらいました。',zh:'我请老师帮我修改了作文里的错误。',o:[['[直|なお]して','修改、修好','正确；修改文章、机械等用「直す」'],['[治|なお]して','治好','主要表示治病或治伤'],['[戻|もど]して','恢复、归还','强调回到原状态或原处'],['[変|か]えて','更换、改变','虽可改变内容，但「間違いを直す」是自然固定搭配']],a:0,pattern:'名词＋を直（なお）す／动词て形＋もらう',tip:'「直す」用于改错、修理；「治す」用于疾病。此句的「～てもらう」表示请他人帮助做。',mix:'同音词「直す（修正）」和「治す（治病）」在JLPT词汇题中很容易混淆。',ex:'[文章|ぶんしょう]を[直|なお]してもらいました。',exzh:'请别人帮我修改了文章。'}
 ];
+const BULK_ADDED=window.addJLPTBulkQuiz?window.addJLPTBulkQuiz(BANK):{n2:0,n3:0};
 const K='jlptPracticeV2State';
 let saved={answers:{},wrong:{},star:{}};try{const v=JSON.parse(localStorage.getItem(K)||'{}');saved={answers:v.answers||{},wrong:v.wrong||{},star:v.star||{}}}catch(e){}
 let mode='unseen',idx=0,selected=null,justAnsweredId=null;
@@ -104,14 +108,14 @@ $('counter').textContent=arr.length?(idx+1)+' / '+arr.length:'0 / 0';$('progress
 $('correctStat').textContent='已做 '+s.n+' · 答对 '+s.ok;
 if(!arr.length){$('qbody').innerHTML='<div class="empty"><b>这里还没有题目</b><p>切回「全部题目」开始练习，答错的题会自动进入错题本。</p></div>';return}
 let q=arr[idx],old=saved.answers[q.id],ans=old?old.selected:null,done=!!old,chosen=done?ans:selected;
-let body='<div class="qmeta"><span class="tag">'+q.l+' · '+(q.t==='grammar'?'语法':'词汇')+'</span><button id="starBtn" class="bookmark '+(saved.star[q.id]?'active':'')+'" aria-label="收藏当前题">'+(saved.star[q.id]?'★':'☆')+'</button></div>'+
+let body='<div class="qmeta"><span class="tag">'+q.l+' · '+(q.t==='grammar'?'语法':q.t==='reading'?'汉字读音':q.t==='writing'?'汉字书写':'词汇')+'</span><button id="starBtn" class="bookmark '+(saved.star[q.id]?'active':'')+'" aria-label="收藏当前题">'+(saved.star[q.id]?'★':'☆')+'</button></div>'+
 '<div class="qprompt">'+ruby(q.q)+'</div>'+(done?'<div class="trans">'+esc(q.zh)+'</div>':'')+
 '<div class="choices">'+q.o.map((o,i)=>{let cls=done?(i===q.a?' correct':i===ans?' wrong':''):(i===chosen?' selected':'');return '<button class="choice'+cls+'" data-answer="'+i+'" '+(done?'disabled':'')+'><span class="num">'+(i+1)+'</span><span class="jp">'+ruby(o[0])+'</span></button>'}).join('')+'</div>'+
 '<div class="action"><button id="submit" class="primary" '+(done||chosen===null?'disabled':'')+'>'+(done?'已提交':'提交答案')+'</button><button id="retry" '+(!done?'disabled':'')+'>↻ 重练</button></div>';
 if(done){body+='<div class="result"><div class="resultTitle '+(old.correct?'good':'bad')+'">'+(old.correct?'✓ 回答正确！':'✕ 回答错误')+' 正确答案：'+(q.a+1)+' '+ruby(q.o[q.a][0])+'</div>'+
 '<h3 class="explainTitle">📖 语法／词汇重点</h3><div class="point"><b>'+esc(q.pattern)+'</b><div style="margin-top:6px;font-size:14px">'+esc(q.tip)+'</div></div>'+
-'<h3 class="explainTitle">四个选项逐个分析</h3><div class="reasons">'+q.o.map((o,i)=>'<div class="reason '+(i===q.a?'good':'')+'"><div class="reasonHead">'+(i===q.a?'✅':'✕')+' '+(i+1)+' '+ruby(o[0])+' · '+esc(o[1])+'</div><p>'+esc(o[2])+'</p></div>').join('')+'</div>'+
-'<h3 class="explainTitle">例句 · 汉字注音</h3><button id="playEx" type="button" style="border:1px solid #b8dfd4;border-radius:9px;padding:6px 11px;background:#effaf6;color:#168970">🔊 朗读例句</button><div class="example">'+ruby(q.ex)+'<div style="font-size:13px;color:#65758c">'+esc(q.exzh)+'</div></div>'+
+'<h3 class="explainTitle">四个选项逐个分析</h3><div class="reasons">'+q.o.map((o,i)=>'<div class="reason '+(i===q.a?'good':'')+'"><div class="reasonHead">'+(i===q.a?'✅':'✕')+' '+(i+1)+' '+ruby(o[3]||o[0])+' · '+esc(o[1])+'</div><p>'+esc(o[2])+'</p></div>').join('')+'</div>'+
+'<h3 class="explainTitle">'+(q.source==='MIT-vocab'?'目标词汇 · 正确假名':'例句 · 汉字注音')+'</h3><button id="playEx" type="button" style="border:1px solid #b8dfd4;border-radius:9px;padding:6px 11px;background:#effaf6;color:#168970">🔊 朗读例句</button><div class="example">'+ruby(q.ex)+'<div style="font-size:13px;color:#65758c">'+esc(q.exzh)+'</div></div>'+
 '<h3 class="explainTitle">⚠️ 易混考点</h3><div class="point">'+esc(q.mix)+'</div>'+
 '<div class="tiny" style="margin-top:12px">错题会保留在错题本中，直到你手动选择「已掌握」。</div>'+
 (saved.wrong[q.id]?'<button id="mastered" style="margin-top:12px;padding:9px 13px;border:1px solid #a8d7c9;border-radius:10px;color:#168970;background:#effaf6">✓ 已掌握，移出错题本</button>':'')+'</div>';}
