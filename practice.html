@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>JLPT Study Hub · 智能刷题</title>
+<style>
+:root{--ink:#202733;--muted:#78808d;--line:#e8ebf1;--blue:#5075eb;--mint:#19a78c;--mintbg:#e5f8f3;--red:#d95058;--redbg:#fff1f2;--bg:#f5f7fb;--paper:white}
+*{box-sizing:border-box}body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+button,select{font:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #9baefa;outline-offset:2px}
+.layout{max-width:780px;margin:0 auto;min-height:100vh;padding:0 16px 110px}
+header{display:flex;align-items:center;gap:12px;padding:19px 0 13px;background:var(--bg)}
+header a{display:grid;place-items:center;width:40px;height:40px;text-decoration:none;border-radius:50%;color:var(--ink);font-size:25px;background:#fff}
+.hd{flex:1;min-width:0}.hd b{display:block;font-size:19px}.hd small{display:block;font-size:12px;color:var(--muted)}
+.pill{padding:3px 8px;border-radius:99px;background:#eef2ff;color:#4f64ad;font-size:11px;white-space:nowrap;font-weight:700}
+.panel{background:var(--paper);border-radius:20px;box-shadow:0 3px 18px rgba(32,43,78,.035);margin:12px 0;padding:20px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px}.filters label{font-size:12px;color:var(--muted);display:block}
+.filters select{display:block;width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-weight:700}
+.mode{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap}.mode button{border:1px solid var(--line);background:white;color:#596373;border-radius:999px;padding:7px 13px;font-size:13px}
+.mode button.active{background:#eaf3ff;color:#3062d7;border-color:#afc9fa;font-weight:700}
+.stats{display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--muted);font-size:13px;margin-bottom:10px}
+.bar{height:6px;background:#eef1f5;border-radius:50px;overflow:hidden}.bar i{display:block;background:linear-gradient(90deg,#58d6c2,#5895e9);height:100%;transition:width .25s}
+.qmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:14px 0 17px}.qmeta .tag{font-size:12px;font-weight:700;color:#3c8476;background:#e9f7f2;border-radius:7px;padding:3px 9px}
+.qprompt{font-size:22px;line-height:2.2;font-weight:650;letter-spacing:.1px;white-space:pre-wrap;overflow-wrap:anywhere}
+ruby{ruby-position:over}rt{font-size:.48em;color:#7f8d9c;font-weight:400;user-select:none}
+.no-ruby rt{visibility:hidden}
+.trans{margin:8px 0 14px;padding:9px 12px;border-left:3px solid #a4c5ec;background:#f6f9fd;color:#657084;font-size:13px}
+.choices{display:grid;gap:12px;margin:22px 0 12px}
+.choice{display:flex;align-items:center;gap:13px;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:16px;min-height:76px;padding:13px 16px;background:white;color:var(--ink)}
+.choice .num{width:28px;height:28px;flex:none;border-radius:9px;display:grid;place-items:center;background:#eff2f6;color:#7c8999;font-weight:700;font-size:15px}
+.choice .jp{font-size:19px;font-weight:650}.choice.selected{background:#edf2ff;border-color:var(--blue)}.choice.selected .num{background:var(--blue);color:white}
+.choice.correct{background:var(--mintbg);border-color:var(--mint)}.choice.correct .num{background:var(--mint);color:white}
+.choice.wrong{background:var(--redbg);border-color:var(--red)}.choice.wrong .num{background:var(--red);color:white}
+.choice:disabled{opacity:1;cursor:default}
+.tiny{font-size:12px;color:var(--muted)}.action{display:flex;gap:10px;margin-top:14px}.action button{min-height:46px;border-radius:12px;border:1px solid #dce3ee;background:white;padding:10px 16px}
+.action .primary{flex:1;background:var(--blue);color:white;font-weight:750;border-color:var(--blue)}.action .primary:disabled{background:#e1e5ef;border-color:#e1e5ef;color:#99a1ae}
+.bookmark{border:1px solid #e7ebef;background:#fff;border-radius:11px;padding:5px 12px;font-size:19px;color:#a3aab4}.bookmark.active{color:#db8a17;background:#fff5df}
+.result{margin-top:20px;border-top:1px solid var(--line);padding-top:18px}
+.resultTitle{display:flex;align-items:center;gap:8px;font-weight:750;font-size:17px}.resultTitle.good{color:#168e75}.resultTitle.bad{color:#cb4b5b}
+.explainTitle{font-size:16px;margin:20px 0 8px;font-weight:800}.point{padding:14px 16px;background:#f1f6fe;border-radius:13px}
+.reasons{display:grid;gap:10px}.reason{border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.reason.good{border-color:#b2e3d5;background:#f3fbf8}
+.reasonHead{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:750}.reason p{font-size:13px;color:#5a6675;margin:6px 0 0}
+.example{background:#f8f9fc;border-radius:14px;padding:14px 16px;margin-top:10px;line-height:2.2}
+.navBottom{position:fixed;bottom:0;left:0;width:100%;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom))}
+.navBottom .wrap{max-width:748px;margin:auto;display:flex;gap:10px}.navBottom button{flex:1;padding:12px 8px;border-radius:12px;border:1px solid #e0e5ee;background:#fff;min-height:49px;color:#4e5d6b}.navBottom button.next{background:var(--blue);color:white;border-color:var(--blue);font-weight:750}
+.navBottom button:disabled{opacity:.4}
+.empty{text-align:center;padding:45px 12px;color:var(--muted)}
+.summary{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;color:#667288;font-size:13px}
+@media(max-width:480px){.layout{padding:0 12px 110px}.panel{padding:16px}.qprompt{font-size:20px}.choice .jp{font-size:18px}.choice{min-height:74px}.hd b{font-size:18px}}
+</style>
+</head><body><div class="layout">
+<header><a href="./" aria-label="返回学习站首页">‹</a><div class="hd"><b>智能刷题 · JLPT Study Hub</b><small>手机刷题 · 假名 · 中文精讲 · 自动错题本</small></div><span class="pill">原创模拟题</span></header>
+<div class="panel">
+<div class="filters"><label>考试等级<select id="level"><option value="N2">N2 · 冲刺</option><option value="N3">N3 · 巩固</option></select></label><label>专项类型<select id="type"><option value="all">综合训练</option><option value="grammar">语法</option><option value="vocab">文字词汇</option></select></label></div>
+<div class="mode" role="group" aria-label="练习模式"><button class="active" data-mode="all">全部题目</button><button data-mode="wrong">❌ 错题重练</button><button data-mode="star">☆ 收藏夹</button></div>
+<div class="summary"><span id="allStat"></span><label><input id="furigana" type="checkbox" checked> 显示假名</label></div>
+</div>
+<div class="panel" id="workspace" aria-live="polite">
+<div class="stats"><span id="counter">1 / 1</span><span id="correctStat">已答 0 · 正确 0</span></div><div class="bar"><i id="progress"></i></div>
+<div id="qbody"></div>
+</div>
+<p class="tiny" style="text-align:center">练习题为本站编写的 JLPT 风格模拟题，不冒充官方历年真题。答案记录仅保存在当前浏览器。</p>
+</div>
+<div class="navBottom"><div class="wrap"><button id="prev">← 上一题</button><button class="next" id="next">下一题 →</button></div></div>
+<script>
+(function(){
+'use strict';
+const BANK=[
+{id:'n2-01',l:'N2',t:'grammar',q:'この[店|みせ]では、[客|きゃく]の[予算|よさん]（　）、[料理|りょうり]の[内容|ないよう]を[変|か]えている。',zh:'这家店会根据客人的预算调整料理内容。',o:[['に[比|くら]べて','与……相比','比较两个对象，这里不是在比较预算'],['に[先立|さきだ]って','在……之前','用于某事件开始之前的动作，不表示预算差异'],['に[応|おう]じて','根据……、按照……','预算不同，料理内容随之调整，符合条件变化'],['に[向|む]けて','朝向……、为了……','表示面向目标或方向，不是按条件调整']],a:2,pattern:'名词＋に応（おう）じて',tip:'表示根据情况、需求、能力等条件而改变方式或程度。常见搭配：予算・希望・能力・状況＋に応じて。',mix:'「に応じて」随条件变化；「に向けて」朝目标努力；「に比べて」作比较。',ex:'[能力|のうりょく]に[応|おう]じて、[仕事|しごと]を[任|まか]せます。',exzh:'根据能力分配工作。'},
+{id:'n2-02',l:'N2',t:'grammar',q:'[忙|いそが]しい（　）、[食事|しょくじ]を[抜|ぬ]くのは[体|からだ]によくない。',zh:'即使忙，也不应该因此不吃饭。',o:[['からといって','虽说因为……也不能……','正确；后项对前项理由加以限制或否定'],['にしては','就……而言却……','表示实际与预期不同，不接这种理由否定'],['ばかりに','只因为……导致坏结果','突出单一原因的后果，这里是规劝'],['だけあって','不愧是……、正因为……','强调与实力或经历相符的积极结果']],a:0,pattern:'普通形＋からといって',tip:'表示不能仅凭前面的理由就得出后面的结论。常搭配「～とは限らない／～わけではない／～てはいけない」。',mix:'「ばかりに」多指令人遗憾的原因结果；「からといって」强调不能以此为借口。',ex:'[安|やす]いからといって、[必要|ひつよう]のないものを[買|か]わない。',exzh:'不能因为便宜就买不需要的东西。'},
+{id:'n2-03',l:'N2',t:'grammar',q:'[試験|しけん]（　）、[受験者|じゅけんしゃ]に[注意事項|ちゅういじこう]を[説明|せつめい]した。',zh:'考试开始前，向考生说明了注意事项。',o:[['に[比|くら]べて','与……相比','这里并没有比较两个对象'],['に[先立|さきだ]って','在……之前','正确；重大事件开始前，先进行准备说明'],['に[応|おう]じて','根据……','不表示事前说明'],['に[向|む]けて','为了……、面向……','可表示为考试做准备，但搭配此句更强调事前阶段']],a:1,pattern:'名词＋に先立（さきだ）って',tip:'正式表达，在典礼、会议、考试等事件之前先做某事。书面和通知中很常见。',mix:'「に先立って」强调前后顺序；「に向けて」强调朝目标准备。',ex:'[開会|かいかい]に[先立|さきだ]って、[会長|かいちょう]が[挨拶|あいさつ]した。',exzh:'开会之前，会长致辞。'},
+{id:'n2-04',l:'N2',t:'grammar',q:'[彼女|かのじょ]は[日本|にほん]に[十年|じゅうねん]も[住|す]んでいる（　）、[日本語|にほんご]がとても[自然|しぜん]だ。',zh:'她在日本住了十年，难怪日语说得这么自然。',o:[['だけあって','不愧是……、正因为……','正确；经历和表现相符合'],['からには','既然……就……','表示责任决心，不是评价结果'],['おそれがあって','有……风险','表示负面可能，不合语境'],['にかかわらず','不论……','表示不受条件影响，与此句不合']],a:0,pattern:'普通形＋だけあって／名词＋だけあって',tip:'符合预期的评价：正因为有相应经历、能力或地位，所以结果值得称赞。',mix:'「だけに」也能表示正因为，但不一定是赞赏；「だけあって」常用于符合预期的出色表现。',ex:'[人気|にんき]の[店|みせ]だけあって、とてもおいしい。',exzh:'不愧是人气店，真的很好吃。'},
+{id:'n2-05',l:'N2',t:'grammar',q:'[大雨|おおあめ]のため、[川|かわ]の[水|みず]があふれる（　）。',zh:'由于暴雨，河水有泛滥的危险。',o:[['に[違|ちが]いない','一定……','表示说话人确信，不是客观风险提示'],['わけではない','并不是……','部分否定，不合语义'],['おそれがある','有……的危险','正确；常用于负面事态发生的可能性'],['ことになっている','规定……、预定……','表示规则或已确定安排']],a:2,pattern:'动词辞书形＋おそれがある／名词＋のおそれがある',tip:'正式书面语，表达不好的事情可能发生：事故・被害・大雨・遅延等。',mix:'「かもしれない」中性；「おそれがある」更正式且通常指不好的风险。',ex:'[台風|たいふう]で[電車|でんしゃ]が[止|と]まるおそれがある。',exzh:'台风可能导致电车停运。'},
+{id:'n2-06',l:'N2',t:'grammar',q:'[年齢|ねんれい]（　）、このイベントには[誰|だれ]でも[参加|さんか]できる。',zh:'不论年龄，任何人都可以参加这个活动。',o:[['に[応|おう]じて','根据……','会按年龄调整，不是任何年龄都一样'],['にかかわらず','不论……','正确；不受年龄条件影响'],['に[比|くら]べて','与……相比','没有作比较'],['に[向|む]けて','面向……','表达目的或对象，不是无条件参加']],a:1,pattern:'名词＋にかかわらず',tip:'表示无论某一条件如何，结果都不改变。常见：年齢・経験・天候・理由にかかわらず。',mix:'「に応じて」随条件变；「にかかわらず」不受条件影响，考试常对比。',ex:'[経験|けいけん]の[有無|うむ]にかかわらず、[応募|おうぼ]できます。',exzh:'无论有无经验都可以应聘。'},
+{id:'n2-07',l:'N2',t:'grammar',q:'[今年|ことし]の[売上|うりあげ]は[去年|きょねん]（　）、[大幅|おおはば]に[増|ふ]えた。',zh:'今年的销售额与去年相比大幅增长。',o:[['に[先立|さきだ]って','在……之前','不是前后事件顺序'],['に[応|おう]じて','根据……','没有按条件调整'],['に[向|む]けて','面向……','不是目标方向'],['に[比|くら]べて','与……相比','正确；今年与去年两个对象比较']],a:3,pattern:'名词＋に比（くら）べて',tip:'表示两个对象的比较；也可以用「と比べて」。常见：去年・以前・他社・平均に比べて。',mix:'「に対して」可表示对比或针对；「に比べて」明确是比较差异。',ex:'[東京|とうきょう]は[私|わたし]の[町|まち]に[比|くら]べて、[人|ひと]が[多|おお]い。',exzh:'东京与我的城市相比，人更多。'},
+{id:'n2-08',l:'N2',t:'grammar',q:'[彼|かれ]は[英語|えいご]（　）、[中国語|ちゅうごくご]も[話|はな]せる。',zh:'他不仅会英语，还会说中文。',o:[['ばかりか','不仅……而且……','正确；在前项之外再追加超出预期的内容'],['ばかりに','只因为……','强调原因导致结果'],['ばかりだ','只会不断……','表示变化朝一个方向发展'],['ばかりで','只是……、光是……','接续和语义都不符合']],a:0,pattern:'名词／普通形＋ばかりか',tip:'强调不仅有A，而且还有B。后项通常是追加的更强或意外信息。',mix:'「ばかりか」追加；「ばかりに」后悔原因；「ばかりだ」不断发展。',ex:'[雨|あめ]ばかりか、[強|つよ]い[風|かぜ]も[吹|ふ]いている。',exzh:'不仅下雨，还刮着大风。'},
+{id:'n2-09',l:'N2',t:'grammar',q:'[一度|いちど][引|ひ]き[受|う]けた（　）、[最後|さいご]まで[責任|せきにん]を[持|も]つべきだ。',zh:'既然已经接受了，就应该负责到底。',o:[['からには','既然……就……','正确；已决定或发生的事情带来责任'],['にしては','就……而言却……','表示反差，不是责任'],['につれて','随着……','表示连动变化'],['をめぐって','围绕……','表示议论争端的主题']],a:0,pattern:'普通形＋からには',tip:'表示“既然决定或做到某事，就理应……”，后项经常是义务、决心、责任。',mix:'「以上（いじょう）は」与「からには」意思接近，语气都较坚定。',ex:'[約束|やくそく]したからには、[必|かなら]ず[守|まも]る。',exzh:'既然答应了，就一定遵守。'},
+{id:'n2-10',l:'N2',t:'grammar',q:'この[映画|えいが]は[子供|こども]（　）、[大人|おとな]にも[人気|にんき]がある。',zh:'这部电影不仅受孩子欢迎，也很受大人欢迎。',o:[['だけに','正因为……','表示原因，与并列范围不符'],['はもちろん','……自不必说，而且……','正确；后项还包括大人'],['に[反|はん]して','违反……、与……相反','并非反面结果'],['に[限|かぎ]って','偏偏……、唯独……','表示限定或意外，不是增加范围']],a:1,pattern:'名词＋はもちろん',tip:'先提出理所当然的A，再进一步强调B也如此；接「も／まで／さえ」很自然。',mix:'「だけでなく」较中性；「はもちろん」强调前项自不待言。',ex:'[味|あじ]はもちろん、[値段|ねだん]も[魅力|みりょく]だ。',exzh:'味道自不必说，价格也很有吸引力。'},
+{id:'n3-01',l:'N3',t:'grammar',q:'[日本|にほん]へ[来|き]て（　）、[毎日|まいにち][日本語|にほんご]を[使|つか]っている。',zh:'来到日本以后，我每天都使用日语。',o:[['から','……之后、从……以来','正确；Vてから表示动作完成后持续的事情'],['まで','直到……','表示终点，接续不合'],['ほど','达到……程度','表达程度，不是时间起点'],['しか','只有……（后接否定）','后面不是否定形式']],a:0,pattern:'动词て形＋から',tip:'表示在A动作之后发生B，也能表示从A以后一直保持B。',mix:'「たあとで」仅表示先后；「てから」更强调完成A再开始B。',ex:'[宿題|しゅくだい]をしてから、[寝|ね]ます。',exzh:'做完作业后睡觉。'},
+{id:'n3-02',l:'N3',t:'grammar',q:'[明日|あした]は[早|はや]いので、[今日|きょう]は[早|はや]く[寝|ね]る（　）。',zh:'明天要早起，所以我决定今天早点睡。',o:[['ことにする','决定做……','正确；说话人自己的决定'],['ことになる','（外部因素）决定……','多用于客观安排或被决定'],['ようになる','变得能够……、开始……','表示能力习惯变化'],['ところだった','险些……','表示差点发生的事情']],a:0,pattern:'动词辞书形／ない形＋ことにする',tip:'主语有意志，自行决定做或不做某事。',mix:'「ことにする」自己决定；「ことになる」制度或他人安排决定，N3常考。',ex:'[毎朝|まいあさ][走|はし]ることにしました。',exzh:'我决定每天早晨跑步。'},
+{id:'n3-03',l:'N3',t:'grammar',q:'[忘|わす]れない（　）、スマホにメモしておく。',zh:'为了不忘记，我先在手机里记下来。',o:[['ように','为了能够……／为了避免……','正确；目标是保持“不忘记”的状态'],['ためで','因为……','接续不正确；通常是「ために」'],['そうに','看上去……地','样态表达，不表示目的'],['らしく','像……一样','表示典型特征']],a:0,pattern:'动词辞书形／ない形＋ように',tip:'表示为了实现某种状态、避免某种情况。和可能形、ない形搭配很多。',mix:'「ために」常搭配意志性动作目的；「ように」常搭配能力或状态的实现。',ex:'[遅刻|ちこく]しないように、[早|はや]く[出|で]ます。',exzh:'为了不迟到，早点出门。'},
+{id:'n3-04',l:'N3',t:'grammar',q:'この[荷物|にもつ]は[重|おも]すぎて、[一人|ひとり]では[運|はこ]び（　）。',zh:'这件行李太重，一个人不好搬。',o:[['やすい','容易……','含义相反'],['にくい','难以……','正确；动词ます形去ます＋にくい'],['そうだ','看起来要……','形态和语义不合'],['たがる','（第三人称）想要……','表示愿望，不是困难']],a:1,pattern:'动词ます形去掉ます＋にくい',tip:'表示做某个动作比较困难；如「読みにくい」「使いにくい」。',mix:'「にくい」难做；「づらい」多带主观难受或心理上的困难。',ex:'この[字|じ]は[小|ちい]さくて[読|よ]みにくい。',exzh:'这字太小，不好读。'},
+{id:'n3-05',l:'N3',t:'grammar',q:'[雨|あめ]が[降|ふ]っている（　）、[試合|しあい]は[予定|よてい][通|どお]り[行|おこな]われた。',zh:'虽然下雨了，比赛还是按计划举行。',o:[['ので','因为……','表示原因，难以说明逆接'],['のに','明明……却……','正确；前后预期相反'],['ために','由于／为了……','原因或目的，不是逆接'],['ながら','一边……一边……','一般接动词ます形，不合']],a:1,pattern:'普通形＋のに',tip:'逆接表达，前后实际情况和预期相反，常带意外、遗憾等情绪。',mix:'「けれども」只是一般转折；「のに」更有出乎意料的感觉。',ex:'[勉強|べんきょう]したのに、[間違|まちが]えた。',exzh:'明明学习过了，却还是做错了。'},
+{id:'n3-06',l:'N3',t:'grammar',q:'[旅行|りょこう]の[前|まえ]に、ホテルを[予約|よやく]して（　）。',zh:'旅行前先把酒店订好（为以后做准备）。',o:[['しまう','做完／不小心……','强调完结或遗憾，不强调提前准备'],['おく','事先做好准备','正确；Vておく表示为将来提前准备'],['みる','试着做……','表示尝试而不是准备'],['くる','开始／朝这边来','表示趋向变化或动作移动']],a:1,pattern:'动词て形＋おく',tip:'事先做某事，方便之后的安排。日常里「とく」是「ておく」的口语缩约。',mix:'「てしまう」着重动作完成或遗憾；「ておく」重视为之后做准备。',ex:'[試験|しけん]の[前|まえ]に、[単語|たんご]を[復習|ふくしゅう]しておく。',exzh:'考试前先复习单词。'},
+{id:'n2-11',l:'N2',t:'vocab',q:'[彼|かれ]の[説明|せつめい]は[具体性|ぐたいせい]に（　）、[説得力|せっとくりょく]がなかった。',zh:'他的说明缺乏具体性，没有说服力。',o:[['[欠|か]けて','缺乏……','正确；「～に欠ける」表示缺少必要条件'],['[抜|ぬ]けて','脱落、漏掉','常说「ページが抜ける」而非「具体性に抜ける」'],['[外|はず]れて','脱离、偏离','常说「予想が外れる」而非本句的搭配'],['[離|はな]れて','离开、远离','常说「駅から離れる」，不用于具体性欠缺']],a:0,pattern:'名词＋に欠（か）ける',tip:'形容能力、礼貌、具体性等方面缺少应有的要素，是N2常见搭配。',mix:'「欠ける」缺乏一部分；「抜ける」从某处脱落或遗漏。',ex:'この[計画|けいかく]は[安全性|あんぜんせい]に[欠|か]ける。',exzh:'这个计划缺乏安全性。'},
+{id:'n3-07',l:'N3',t:'vocab',q:'[先生|せんせい]に[作文|さくぶん]の[間違|まちが]いを（　）もらいました。',zh:'我请老师帮我修改了作文里的错误。',o:[['[直|なお]して','修改、修好','正确；修改文章、机械等用「直す」'],['[治|なお]して','治好','主要表示治病或治伤'],['[戻|もど]して','恢复、归还','强调回到原状态或原处'],['[変|か]えて','更换、改变','虽可改变内容，但「間違いを直す」是自然固定搭配']],a:0,pattern:'名词＋を直（なお）す／动词て形＋もらう',tip:'「直す」用于改错、修理；「治す」用于疾病。此句的「～てもらう」表示请他人帮助做。',mix:'同音词「直す（修正）」和「治す（治病）」在JLPT词汇题中很容易混淆。',ex:'[文章|ぶんしょう]を[直|なお]してもらいました。',exzh:'请别人帮我修改了文章。'}
+];
+const K='jlptPracticeV2State';
+let saved={answers:{},wrong:{},star:{}};try{const v=JSON.parse(localStorage.getItem(K)||'{}');saved={answers:v.answers||{},wrong:v.wrong||{},star:v.star||{}}}catch(e){}
+let mode='all',idx=0,selected=null;
+const $=id=>document.getElementById(id);
+function persist(){try{localStorage.setItem(K,JSON.stringify(saved))}catch(e){}}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function ruby(s){return esc(s).replace(/\[([^\]|]+)\|([^\]]+)\]/g,'<ruby>$1<rt>$2</rt></ruby>')}
+function pool(){let l=$('level').value,t=$('type').value;return BANK.filter(q=>q.l===l&&(t==='all'||q.t===t)&&(mode==='all'||(mode==='wrong'?saved.wrong[q.id]:saved.star[q.id])))}
+function qStat(){let all=Object.values(saved.answers);return {n:all.length,ok:all.filter(x=>x.correct).length}}
+function render(){
+let arr=pool();const s=qStat();
+$('allStat').textContent='累计已做 '+s.n+' 题 · 正确率 '+(s.n?Math.round(s.ok/s.n*100):0)+'% · 错题 '+Object.keys(saved.wrong).filter(x=>saved.wrong[x]).length;
+if(idx>=arr.length)idx=Math.max(0,arr.length-1);
+$('prev').disabled=idx===0||!arr.length;$('next').disabled=idx>=arr.length-1||!arr.length;
+$('counter').textContent=arr.length?(idx+1)+' / '+arr.length:'0 / 0';$('progress').style.width=arr.length?((idx+1)/arr.length*100)+'%':'0%';
+$('correctStat').textContent='已做 '+s.n+' · 答对 '+s.ok;
+if(!arr.length){$('qbody').innerHTML='<div class="empty"><b>这里还没有题目</b><p>切回「全部题目」开始练习，答错的题会自动进入错题本。</p></div>';return}
+let q=arr[idx],old=saved.answers[q.id],ans=old?old.selected:null,done=!!old,chosen=done?ans:selected;
+let body='<div class="qmeta"><span class="tag">'+q.l+' · '+(q.t==='grammar'?'语法':'词汇')+'</span><button id="starBtn" class="bookmark '+(saved.star[q.id]?'active':'')+'" aria-label="收藏当前题">'+(saved.star[q.id]?'★':'☆')+'</button></div>'+
+'<div class="qprompt">'+ruby(q.q)+'</div><div class="trans">'+esc(q.zh)+'</div>'+
+'<div class="choices">'+q.o.map((o,i)=>{let cls=done?(i===q.a?' correct':i===ans?' wrong':''):(i===chosen?' selected':'');return '<button class="choice'+cls+'" data-answer="'+i+'" '+(done?'disabled':'')+'><span class="num">'+(i+1)+'</span><span class="jp">'+ruby(o[0])+'</span></button>'}).join('')+'</div>'+
+'<div class="action"><button id="submit" class="primary" '+(done||chosen===null?'disabled':'')+'>'+(done?'已提交':'提交答案')+'</button><button id="retry" '+(!done?'disabled':'')+'>↻ 重练</button></div>';
+if(done){body+='<div class="result"><div class="resultTitle '+(old.correct?'good':'bad')+'">'+(old.correct?'✓ 回答正确！':'✕ 回答错误')+' 正确答案：'+(q.a+1)+' '+ruby(q.o[q.a][0])+'</div>'+
+'<h3 class="explainTitle">📖 语法／词汇重点</h3><div class="point"><b>'+esc(q.pattern)+'</b><div style="margin-top:6px;font-size:14px">'+esc(q.tip)+'</div></div>'+
+'<h3 class="explainTitle">四个选项逐个分析</h3><div class="reasons">'+q.o.map((o,i)=>'<div class="reason '+(i===q.a?'good':'')+'"><div class="reasonHead">'+(i===q.a?'✅':'✕')+' '+(i+1)+' '+ruby(o[0])+' · '+esc(o[1])+'</div><p>'+esc(o[2])+'</p></div>').join('')+'</div>'+
+'<h3 class="explainTitle">例句 · 汉字注音</h3><div class="example">'+ruby(q.ex)+'<div style="font-size:13px;color:#65758c">'+esc(q.exzh)+'</div></div>'+
+'<h3 class="explainTitle">⚠️ 易混考点</h3><div class="point">'+esc(q.mix)+'</div>'+
+'<div class="tiny" style="margin-top:12px">错题会保留在错题本中，直到你手动选择「已掌握」。</div>'+
+(saved.wrong[q.id]?'<button id="mastered" style="margin-top:12px;padding:9px 13px;border:1px solid #a8d7c9;border-radius:10px;color:#168970;background:#effaf6">✓ 已掌握，移出错题本</button>':'')+'</div>';}
+$('qbody').innerHTML=body;
+document.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',function(){if(done)return;selected=Number(b.dataset.answer);render()}));
+$('starBtn').onclick=()=>{saved.star[q.id]=!saved.star[q.id];persist();render()};
+$('submit').onclick=()=>{if(done||selected===null)return;let correct=selected===q.a;saved.answers[q.id]={selected:selected,correct:correct,at:new Date().toISOString()};if(!correct)saved.wrong[q.id]=true;persist();selected=null;render()};
+$('retry').onclick=()=>{delete saved.answers[q.id];selected=null;persist();render()};
+if($('mastered'))$('mastered').onclick=()=>{delete saved.wrong[q.id];persist();render()};
+}
+function reset(){idx=0;selected=null;render()}
+$('level').onchange=reset;$('type').onchange=reset;
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));reset()});
+$('next').onclick=()=>{if(idx<pool().length-1){idx++;selected=null;render()}};
+$('prev').onclick=()=>{if(idx>0){idx--;selected=null;render()}};
+$('furigana').onchange=()=>{document.body.classList.toggle('no-ruby',!$('furigana').checked)};
+render();
+})();
+</script>
+</body></html>
