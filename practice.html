@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>JLPT Study Hub · 智能刷题</title>
+<title>考试刷题 · JLPT Study Hub</title>
 <style>
 :root{--ink:#202733;--muted:#78808d;--line:#e8ebf1;--blue:#5075eb;--mint:#19a78c;--mintbg:#e5f8f3;--red:#d95058;--redbg:#fff1f2;--bg:#f5f7fb;--paper:white}
 *{box-sizing:border-box}body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
@@ -49,8 +49,8 @@ ruby{ruby-position:over}rt{font-size:.48em;color:#7f8d9c;font-weight:400;user-se
 .summary{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;color:#667288;font-size:13px}
 @media(max-width:480px){.layout{padding:0 12px 110px}.panel{padding:16px}.qprompt{font-size:20px}.choice .jp{font-size:18px}.choice{min-height:74px}.hd b{font-size:18px}}
 </style>
-</head><body><div class="layout">
-<header><a href="./" aria-label="返回学习站首页">‹</a><div class="hd"><b>智能刷题 · JLPT Study Hub</b><small>手机刷题 · 假名 · 中文精讲 · 自动错题本</small></div><span class="pill">原创模拟题</span></header>
+<link rel="stylesheet" href="./site.css?v=20261016m1"><style>body{background:#f7f8fa}.layout{padding-bottom:195px}.navBottom{bottom:calc(63px + env(safe-area-inset-bottom));z-index:15}.bottomnav{z-index:20}@media(max-width:480px){.layout{padding-bottom:200px}}</style></head><body><div class="layout">
+<header><a href="./" aria-label="返回学习站首页">‹</a><div class="hd"><b>考试刷题 · JLPT Study Hub</b><small>手机刷题 · 假名 · 中文精讲 · 自动错题本</small></div><span class="pill">原创模拟题</span></header>
 <div class="panel">
 <div class="filters"><label>考试等级<select id="level"><option value="N2">N2 · 冲刺</option><option value="N3">N3 · 巩固</option></select></label><label>专项类型<select id="type"><option value="all">综合训练</option><option value="grammar">语法</option><option value="vocab">原有文字词汇</option><option value="reading">汉字读音（700题）</option><option value="writing">假名选汉字（300题）</option></select></label></div>
 <div class="mode" role="group" aria-label="练习模式"><button class="active" data-mode="unseen">📝 未做新题</button><button data-mode="all">全部题目</button><button data-mode="wrong">❌ 错题重练</button><button data-mode="star">☆ 收藏夹</button></div>
@@ -133,7 +133,14 @@ $('next').onclick=()=>{if(mode==='unseen'){if(justAnsweredId){justAnsweredId=nul
 $('prev').onclick=()=>{if(idx>0){idx--;selected=null;render()}};
 $('furigana').onchange=()=>{document.body.classList.toggle('no-ruby',!$('furigana').checked)};
 $('exportWrong').onclick=()=>{const w=BANK.filter(q=>saved.wrong[q.id]);if(!w.length)return alert('目前还没有错题，做错的题会自动收录。');const clean=x=>String(x||'').replace(/\[([^\]|]+)\|[^\]]+\]/g,'$1');const lines=['# JLPT Study Hub · 错题本','', '生成时间：'+new Date().toLocaleString('zh-CN'),''];w.forEach((q,i)=>{lines.push('## '+(i+1)+'. '+q.l+' '+(q.t==='grammar'?'语法':'词汇'),'','题目：'+clean(q.q),'中文：'+q.zh,'接续：'+q.pattern,'说明：'+q.tip,'');q.o.forEach((o,j)=>lines.push((j+1)+'. '+clean(o[0])+' | '+o[1]+' | '+o[2]+(j===q.a?' ✓':'')));lines.push('','例句：'+clean(q.ex),'例句翻译：'+q.exzh,'易混点：'+q.mix,'','---','')});const blob=new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='JLPT错题本.md';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+const qs=new URLSearchParams(location.search);
+if(['N2','N3'].includes(qs.get('level')))$('level').value=qs.get('level');
+if(['all','grammar','vocab','reading','writing'].includes(qs.get('type')))$('type').value=qs.get('type');
+if(['unseen','all','wrong','star'].includes(qs.get('mode')))mode=qs.get('mode');
+document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+const wanted=qs.get('focus');
+if(wanted){const at=pool().findIndex(x=>x.id===wanted);if(at>=0)idx=at;}
 render();
 })();
 </script>
-</body></html>
+<script src="./site.js?v=20261016m1"></script></body></html>
