@@ -3,7 +3,10 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const BANK=Array.isArray(window.JLPT_GRAMMAR_BANK)?window.JLPT_GRAMMAR_BANK:[];
+const ORIGINAL=Array.isArray(window.JLPT_GRAMMAR_BANK)?window.JLPT_GRAMMAR_BANK:[];
+const EXTRA=typeof window.buildJLPTGrammarBank==='function'?window.buildJLPTGrammarBank():[];
+const BANK=ORIGINAL.concat(EXTRA);
+const BANK_COUNT=EXTRA.length;
 const BYID=new Map(BANK.map(q=>[q.id,q])),STORE='jlptGrammarPracticeV1',LEGACY='jlptPracticeV2State';
 const TERMS={
 '店':'店铺','客':'客人','予算':'预算','料理':'料理','内容':'内容','変':'改变','能力':'能力','応':'根据；适应','仕事':'工作','任':'委托；交给','比':'比较','先立':'在……之前','向':'朝向','忙':'忙碌','食事':'用餐','抜':'省略；不吃','体':'身体','安':'便宜','必要':'必要','買':'购买','試験':'考试','受験者':'考生','注意事項':'注意事项','説明':'说明','開会':'开会','会長':'会长','挨拶':'问候；致辞','彼女':'她','日本':'日本','十年':'十年','住':'居住','日本語':'日语','自然':'自然','人気':'人气','大雨':'大雨','川':'河流','水':'水','台風':'台风','電車':'电车','止':'停止','違':'不同；错误','年齢':'年龄','誰':'谁','参加':'参加','経験':'经验','有無':'有无','応募':'报名；应聘','今年':'今年','売上':'营业额','去年':'去年','大幅':'大幅度','増':'增加','東京':'东京','私':'我','町':'城镇','人':'人','多':'多','彼':'他','英語':'英语','中国語':'中文','話':'说话','雨':'雨','強':'强烈','風':'风','吹':'吹','一度':'一次','引':'拉；引领','受':'接受','最後':'最后','責任':'责任','持':'持有；承担','約束':'约定','必':'一定','守':'遵守','映画':'电影','子供':'小孩','大人':'成人','味':'味道','値段':'价格','魅力':'魅力','反':'相反','限':'限定','来':'来','毎日':'每天','使':'使用','宿題':'作业','寝':'睡觉','明日':'明天','早':'早','今日':'今天','毎朝':'每天早上','走':'跑步','忘':'忘记','遅刻':'迟到','出':'出发；出去','荷物':'行李','重':'沉重','一人':'一个人','運':'搬运','字':'字','小':'小','読':'读','降':'下（雨）','試合':'比赛','予定':'计划；预定','通':'按照；经过','行':'进行；实行','勉強':'学习','間違':'错误','旅行':'旅行','前':'之前','予約':'预约','単語':'单词','復習':'复习','先生':'老师','過':'度过','元気':'健康；精神','存':'想；认为（谦让语）','申':'说（谦让语）','上':'上升；提出','部長':'部长','資料':'资料','覧':'看（尊敬语）','本':'书','先日':'前几天','拝見':'拜读（谦让语）','練習':'练习','少':'少；一点','漢字':'汉字','出発':'出发','家':'家','着':'到达','若':'年轻','挑戦':'挑战','熱':'发烧；热','学校':'学校','休':'休息；缺课','来年':'明年','留学':'留学','友達':'朋友','頼':'请求；拜托','手伝':'帮忙','妹':'妹妹','教':'教','昨日':'昨天','疲':'疲劳','電気':'电灯；电力','開':'打开'
@@ -42,8 +45,10 @@ function candidate(level,mode){
 function createSession(level='N2',mode='all',firstId=null){
  const options=candidate(level,mode);
  if(!options.length){toast(mode==='wrong'?'这个等级还没有错题，可以先做一组新题。':'这个等级还没有收藏题，请先在题目页点击爱心。');return false}
- const shuffled=options.slice();
- for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+ const shuffle=arr=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+ // In normal mode, prioritize unseen questions to finish the 1000-question bank without repeats.
+ const unseen=options.filter(x=>!state.answers[x.id]),already=options.filter(x=>!!state.answers[x.id]);
+ let shuffled=mode==='all'?shuffle(unseen).concat(shuffle(already)):shuffle(options);
  if(firstId){const pos=shuffled.findIndex(x=>x.id===firstId);if(pos>0)shuffled.unshift(...shuffled.splice(pos,1))}
  state.session={level,mode,ids:shuffled.slice(0,10).map(q=>q.id),index:0,selections:{},started:Date.now()};
  state.prefs.level=level;persist();return true;
@@ -82,8 +87,10 @@ function render(){
  $('progress').setAttribute('aria-valuemax',String(s.ids.length));$('progress').setAttribute('aria-valuenow',String(s.index+1));
  $('progressFill').style.width=((s.index+1)/s.ids.length*100)+'%';
  $('levelLabel').textContent=s.level+' · 语法 · '+(s.mode==='wrong'?'错题重练':s.mode==='star'?'收藏复习':'10题一组');
- $('statusText').textContent=answered?(ok?'回答正确 · 可以查看详细解释':'回答错误 · 建议查看全部选项'):'选出最合适的一个答案';
- $('prompt').innerHTML=furigana(q.q,true).replace(/（　）/g,'<span class="blank">＿＿</span>');
+ const levelBank=BANK.filter(x=>x.l===s.level),seenLevel=levelBank.filter(x=>!!state.answers[x.id]).length;
+ $('statusText').title='本级语法题库 '+levelBank.length+'题，已做 '+seenLevel+'题';
+ $('statusText').textContent=answered?(ok?'回答正确 · 查看解析':'回答错误 · 查看选项原因'):'本级已做 '+seenLevel+'/'+levelBank.length;
+ $('prompt').innerHTML=furigana(q.q,true).replace(/（　）/g,'<span class="blank">＿＿</span>').replace(/【([^】]+)】/g,'<span class="keyterm">【$1】</span>');
  $('translateHint').hidden=true;$('translateHint').textContent=q.zh;
  $('hintToggle').textContent='显示题目中文';
  $('choices').innerHTML=q.o.map((opt,i)=>{
@@ -168,6 +175,7 @@ $('closeModal').onclick=closeModal;$('modalBackdrop').onclick=e=>{if(e.target===
 function showSummary(){
  const s=session(),submitted=s.ids.filter(id=>s.selections[id]!==undefined).length;
  const correct=s.ids.filter(id=>{const q=BYID.get(id);return s.selections[id]===q.a}).length;
+ const remaining=BANK.filter(q=>q.l===s.level&&!state.answers[q.id]).length;
  const wrongCount=submitted-correct,skipped=s.ids.length-submitted;
  showModal('本组练习完成 🎉','<div class="grid-numbers" style="grid-template-columns:repeat(3,1fr);text-align:center"><div><strong style="font-size:30px">'+submitted+'</strong><p class="hint">已答题</p></div><div><strong style="font-size:30px;color:#09897a">'+correct+'</strong><p class="hint">正确</p></div><div><strong style="font-size:30px;color:#cb5860">'+wrongCount+'</strong><p class="hint">错误</p></div></div><p>跳过：'+skipped+'题 · 正确率：'+(submitted?Math.round(correct/submitted*100):0)+'%</p><p class="hint">错题会保存，可以从题号总览进入错题重练。</p>',[
  {text:'查看题号',fn:()=>{closeModal();openOverview()}},
