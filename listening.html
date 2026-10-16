@@ -1,0 +1,55 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f7f8fa"><title>N2/N3 听力训练 · JLPT Study Hub</title><link rel="stylesheet" href="./site.css?v=20261016m1">
+<style>
+body{background:#f7f8fa}.shell{max-width:820px;padding-bottom:117px}.listening-hero{background:linear-gradient(125deg,#243659,#15293c);color:white;border-radius:26px;padding:24px;margin:12px 0 18px}.listening-hero p{color:#cbd6e2;font-size:13px;margin:5px 0 0}.listening-hero h1{margin:4px 0 2px}.listen-metrics{display:flex;gap:9px;margin-top:21px}.listen-metrics>div{background:#ffffff1a;border-radius:12px;padding:8px 12px;flex:1;text-align:center}.listen-metrics strong{font-size:20px;display:block}.listen-metrics small{opacity:.78;font-size:11px}
+.listen-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:16px 0}.listen-tabs button{border:1px solid #e2e6ed;background:#fff;border-radius:12px;padding:10px 5px;min-height:53px;font-size:12px;color:#647081;font-weight:800}.listen-tabs button[aria-selected=true]{background:#eaf4ff;border-color:#6290cc;color:#20528e}
+.listencard{padding:21px;border-radius:22px;background:#fff;border:1px solid #eceff3;box-shadow:0 5px 21px #1c31460a;margin-top:10px}
+.control-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:12px 0}.control-row label{font-size:13px;font-weight:750;color:#5d6976}.control-row select{padding:9px 13px;background:white;color:#263b49;border:1px solid #dce3ea;border-radius:11px;min-height:42px}
+.control-row select{max-width:100%}.mini{font-size:12px;color:#788795}.track{color:#1c304a;font-size:18px;line-height:1.9;font-weight:650}.opts{display:grid;gap:10px;margin-top:15px}.opt{width:100%;text-align:left;min-height:62px;padding:12px 13px;display:flex;align-items:center;gap:12px;border-radius:14px;border:1.5px solid #e5eaf0;background:#fff;font-size:15px;color:#243040}.opt span{width:26px;height:26px;flex:none;display:grid;place-items:center;border-radius:8px;background:#f1f4f7;color:#748297}.opt.ok{border-color:#29a38a;background:#e8f9f3}.opt.no{border-color:#db7777;background:#fff0f0}.opt:disabled{opacity:1}
+.audio-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:15px 0}.audio-row button{min-height:44px}.answer-panel{border-top:1px solid #e6ecf3;margin-top:17px;padding-top:16px}.answer-panel h3{margin:12px 0 8px}.jp-script{font-size:18px;line-height:2.12;word-break:break-word;white-space:pre-wrap}.jp-script ruby{ruby-position:over}.jp-script rt{font-size:10px;color:#8a96a1}.annotation{background:#f6f9fc;border-radius:13px;padding:13px;margin:9px 0;font-size:14px}.translation{font-size:15px;color:#627182;line-height:1.8}.text-input{width:100%;min-height:100px;border:1px solid #dce4ec;border-radius:13px;padding:12px;resize:vertical;background:#fff;color:#213040;font:inherit}
+.progress-line{height:8px;border-radius:99px;overflow:hidden;background:#ebeff4;margin:12px 0}.progress-line div{height:100%;width:0%;background:#178e74}
+a.primary-link{color:#1966b1;text-decoration:underline;font-size:14px;overflow-wrap:anywhere}
+.notice-box{padding:12px 14px;background:#fff9e9;border:1px solid #ffe9ae;border-radius:12px;font-size:12px;color:#79602e}
+input[type=checkbox]{accent-color:#167daa}.hidden{display:none!important}
+@media(max-width:450px){.listencard{padding:16px}.listen-tabs button{font-size:11px;padding:10px 4px}.listening-hero{padding:20px}.opts .opt{font-size:14px}.audio-row .btn{flex:1}}
+</style>
+</head><body><main class="shell">
+<header class="topline"><a class="back" href="./strategy.html" aria-label="返回专项对策">‹</a><div class="brand"><div><strong>JLPT 听力训练</strong><small>N2 / N3 · 听懂、分析、再复习</small></div></div><span class="grow"></span><a class="btn small ghost" href="./">首页</a></header>
+<section class="listening-hero"><div class="eyebrow" style="color:#98e5df">LISTENING STUDIO</div><h1>听力专项 🎧</h1><p>先听再答、听写短句、影子跟读。原版资料独立管理，兼顾听力理解与长句训练。</p><div class="listen-metrics"><div><strong id="metricQuiz">10</strong><small>模拟听力题</small></div><div><strong id="metricShadow">34</strong><small>跟读材料</small></div><div><strong id="metricSentences">781</strong><small>开源精听短句</small></div></div></section>
+<nav class="listen-tabs" role="tablist" aria-label="听力训练模式"><button role="tab" data-tab="quiz" aria-selected="true">📝 听力考试</button><button role="tab" data-tab="dictation" aria-selected="false">🎧 精听听写</button><button role="tab" data-tab="shadow" aria-selected="false">🗣️ 跟读</button><button role="tab" data-tab="sources" aria-selected="false">📚 开源资源</button></nav>
+<section id="pane-quiz" class="listencard" role="tabpanel" aria-label="听力考试">
+<div class="control-row"><label>等级 <select id="quizLevel"><option>N2</option><option>N3</option></select></label><label>题型 <select id="quizType"><option value="all">全部题型</option></select></label><label><input id="quizWrongOnly" type="checkbox"> 只练错题</label></div>
+<div class="mini" id="quizProgress">准备好后按播放，原文会在作答后显示。</div><div class="progress-line"><div id="quizBar"></div></div>
+<div class="track" id="quizAsk"></div><div class="audio-row"><button id="quizPlay" class="btn primary" type="button">▶ 播放听力</button><button id="quizReplay" class="btn" type="button">↻ 重听</button><button id="quizStop" class="btn" type="button">■ 停止</button></div>
+<div class="opts" id="quizOpts"></div><div class="answer-panel hidden" id="quizAnswer"></div><div class="actions" style="margin-top:16px"><button id="quizNext" class="btn primary" type="button">下一题 →</button></div>
+</section>
+<section id="pane-dictation" class="listencard hidden" role="tabpanel" aria-label="精听听写">
+<div class="control-row"><label>等级 <select id="dictLevel"><option>N2</option><option>N3</option></select></label><label><input type="checkbox" id="dictWrong"> 仅复习没听懂的短句</label></div>
+<div class="mini" id="dictMeta"></div><div class="progress-line"><div id="dictBar"></div></div>
+<div class="track" id="dictQuestion">先听音频，尝试把听到的内容写下来。</div>
+<div class="audio-row"><button class="btn primary" id="dictPlay">▶ 播放短句</button><button class="btn" id="dictRepeat">↻ 再听一次</button><button class="btn" id="dictStop">■ 停止</button></div>
+<label for="dictInput" class="mini">听写内容（可以写汉字或平假名，不强制自动判分）</label><textarea class="text-input" id="dictInput" placeholder="写下听到的日语…"></textarea>
+<button class="btn" id="dictReveal" style="width:100%;margin-top:12px">查看原文、译文和词汇</button>
+<div id="dictAnswer" class="answer-panel hidden"></div>
+<div id="dictRating" class="actions hidden" style="margin-top:14px"><button class="btn" id="dictMissed">✕ 没听懂，加入复习</button><button class="btn primary" id="dictKnown">✓ 听懂了</button></div>
+</section>
+<section id="pane-shadow" class="listencard hidden" role="tabpanel" aria-label="影子跟读">
+<div class="control-row"><label>等级 <select id="shadowLevel"><option>N2</option><option>N3</option></select></label><label>场景 <select id="shadowScene"></select></label><label><input id="shadowHide" type="checkbox"> 隐藏原文</label></div>
+<div class="mini" id="shadowMeta"></div><div class="jp-script" id="shadowScript" style="padding:20px 0"></div>
+<div class="audio-row"><button id="shadowPlay" class="btn primary">▶ 示范朗读</button><button id="shadowLoop" class="btn">🔁 连听3遍</button><button id="shadowStop" class="btn">■ 停止</button></div>
+<div class="answer-panel" id="shadowDetail"><div class="mini" id="shadowKana"></div><p class="translation" id="shadowZh"></p><div id="shadowTip" class="annotation"></div></div>
+<div class="actions" style="margin-top:15px"><button class="btn" id="shadowPrev">← 上一句</button><button class="btn primary" id="shadowDone">✓ 已跟读</button><button class="btn" id="shadowNext">下一句 →</button></div>
+<div class="mini" style="margin-top:14px">旧版跟读原有记录不删除；本页新练习进度另行保存。发音采用站内日语语音或现有可匹配音频。</div>
+</section>
+<section id="pane-sources" class="listencard hidden" role="tabpanel" aria-label="开源来源和听力素材">
+<h2>GitHub 开源听力素材</h2><p class="muted" style="font-size:14px">本站已使用 OpenJLPT 的开源日语例句作为精听文本。其原项目按 CC BY-SA 4.0 使用，例句还需要遵守 Tatoeba 的署名许可。配音若没有匹配录音，采用设备语音合成，并非真人录音。</p>
+<div class="list"><div class="listrow"><div style="flex:1"><strong>OpenJLPT · 已接入精听</strong><div class="desc">日语例句、词义和词性；用于本站短句精听</div></div><a class="primary-link" href="https://github.com/evanclan/OpenJLPT" target="_blank" rel="noopener">GitHub ↗</a></div>
+<div class="listrow"><div style="flex:1"><strong>JLPT HVPT Trainer · 外部扩展</strong><div class="desc">日语听音选词与听音写词；原项目有自己的音频和授权条件，本网站不复制这些音频</div></div><a class="primary-link" href="https://rikka-zzz.github.io/jlpt-hvpt-trainer/" target="_blank" rel="noopener">在线练习 ↗</a></div></div>
+<p class="notice-box" style="margin-top:15px">本页的10道听力试题和34条跟读材料来自你旧站原有的原创模拟练习；不是日本语能力试验官方听力真题。目前没有从不明许可的GitHub仓库复制收费教材的音频。</p>
+<div style="margin-top:13px;padding:12px;background:#f5f8fc;border-radius:13px"><strong>旧站完整听力备份</strong><p class="mini">旧压缩页面内尚未逐项独立迁移的听力素材保留在此，不删除，供你继续查看。</p><a href="./legacy-listening.html?section=listening" class="primary-link">打开原始完整听力备份 ↗</a></div><div style="margin-top:12px"><a href="./listening-SOURCES.md" class="primary-link">查看详细授权与素材说明</a></div>
+</section>
+<section class="card" style="margin-top:18px"><h3>播放设置与说明</h3><div class="control-row"><label>播放速度 <select id="playbackRate"><option value="0.75">0.75× 慢速</option><option value="0.9">0.9×</option><option value="1" selected>1.0× 原速</option><option value="1.15">1.15×</option></select></label><button class="btn small" id="resetListening" type="button">仅清除新精听记录</button></div><p class="mini" id="audioStatus">声音需在手机浏览器里点击播放。音源优先旧站匹配的 MP3；没有匹配录音时，使用浏览器日语语音合成。</p></section>
+<p class="notice">本站所有进度保存在当前浏览器。原有听力错题使用既有的存储键，旧站其他学习记录不会被清除。</p>
+</main>
+<audio id="nativeAudio" preload="none" style="display:none"></audio>
+<script src="./audio_manifest.js?v=20261016listen"></script><script src="./practice_data_n2.js?v=20261016a"></script><script src="./practice_data_n3.js?v=20261016a"></script><script src="./listening_data.js?v=20261016listen"></script><script src="./word_examples.js?v=20261016w1"></script><script src="./listening.js?v=20261016listen"></script>
+</body></html>

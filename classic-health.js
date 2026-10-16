@@ -6,8 +6,8 @@ const registry = [
  ['applyVocabFix','vocab_fix.js'],['applyVocabDailyShufflePatch','vocab_daily_shuffle_patch.js'],
  ['applyVocabRecognitionPatch','vocab_recognition_patch.js'],
  ['applyLongPodcastPatch','long_podcast_patch.js'],['applyBackgroundAudioPatch','background_audio_patch.js'],
- ['applyPodcastSelectorPatch','podcast_selector_patch.js'],['applyShadowingPatch','shadowing_patch.js'],
- ['applyJlptListeningExamPatch','jlpt_listening_exam_patch.js'],['applyDynamicContentPatch','dynamic_content_patch.js'],
+ ['applyPodcastSelectorPatch','podcast_selector_patch.js'],
+ ['applyDynamicContentPatch','dynamic_content_patch.js'],
  ['applyGrammarQualityPatch','grammar_quality_patch.js'],['applyGrammarQualityMore','grammar_quality_more.js'],
  ['applyGrammarQuality0901','grammar_quality_0901.js'],['applyGrammarQuality0906','grammar_quality_0906.js'],
  ['applyGrammarQuality0907','grammar_quality_0907.js'],['applyGrammarQuality0908','grammar_quality_0908.js'],
@@ -73,7 +73,7 @@ function navigate(){
  if(node){node.scrollIntoView({block:'start'});state.navigation=section}
 }
 function summarize(){
- const sections=['vocab','grammar','reading','listening','review'];
+ const sections=['vocab','grammar','reading','review']; // 听力已独立迁移
  const entries=sections.map(s=>({key:s,exists:!!document.getElementById(s),nav:!!sectionButton(s)}));
  state.sections=entries;
  return entries;
