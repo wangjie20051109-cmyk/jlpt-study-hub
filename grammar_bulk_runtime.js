@@ -75,7 +75,7 @@ function asQ(r,level,idx,mode,all){
   tip:'重点语法「'+label+'」表示「'+r[2]+'」。请结合例句和接续理解。'+(mode==='meaning'?'题型：语法含义辨析。':'题型：例句语法辨认。'),
   mix:'易混：'+opt.filter((_,i)=>i!==answerIndex).slice(0,3).map(x=>'「'+x[0]+'」表示「'+x[1]+'」').join('；')+'。',
   ex:ja,exzh:'英文译文（原开源数据）：'+en,
-  vocab:options.map(x=>[visible(x),'语法含义：'+x[2]]),
+  // Real vocabulary is resolved separately from the example, not from grammar choices.
   source:'jkindrix-japanese-language-data',
   generated:true,mode,sourceId:r[0]
  };
