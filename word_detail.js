@@ -91,6 +91,13 @@ function tapWordCandidates(sentence,w,ex){
  let plain='',at=0,m;
  while((m=re.exec(raw))){plain+=raw.slice(at,m.index);let start=plain.length;plain+=m[1];marks.push({start,end:plain.length,kana:m[2]});at=re.lastIndex}
  plain+=raw.slice(at);
+ // Prefer whole Japanese word boundaries so unrelated kanji fragments are not clickable.
+ const boundaries=new Set([0,plain.length]);
+ if(typeof Intl.Segmenter==='function'){
+  for(const x of new Intl.Segmenter('ja',{granularity:'word'}).segment(plain)){
+   if(x.isWordLike){boundaries.add(x.index);boundaries.add(x.index+x.segment.length)}
+  }
+ }
  const alternatives=[...quickIndex.values()];
  const actual=quickIndex.get(w.word)||{word:w.word,kana:w.kana,zh:ZH[w.word]||'',en:w.meaning||'',level:w.level,id:w.id};
  const matchSet=new Map([[actual.word,actual]]);
@@ -98,7 +105,7 @@ function tapWordCandidates(sentence,w,ex){
  const candidates=[];
  for(const entry of matchSet.values()){
   let pos=plain.indexOf(entry.word);
-  while(pos!==-1){candidates.push({start:pos,end:pos+entry.word.length,v:entry,length:entry.word.length});pos=plain.indexOf(entry.word,pos+1)}
+  while(pos!==-1){if(entry.word===w.word||(boundaries.has(pos)&&boundaries.has(pos+entry.word.length)))candidates.push({start:pos,end:pos+entry.word.length,v:entry,length:entry.word.length});pos=plain.indexOf(entry.word,pos+1)}
  }
  candidates.sort((a,b)=>b.length-a.length||a.start-b.start);
  const choices=[];for(const v of candidates)if(!choices.some(c=>v.start<c.end&&v.end>c.start))choices.push(v);
