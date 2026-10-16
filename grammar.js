@@ -142,11 +142,15 @@ function switchTab(t){if(!activeSheet)openSheet(t);else{sheetTab=t;$('tabExplana
 function toggleExpanded(){expanded=!expanded;$('sheet').classList.toggle('expanded',expanded)}
 $('sheetBackdrop').onclick=closeSheet;$('closeSheet').onclick=closeSheet;
 $('tabExplanation').onclick=()=>switchTab('explain');$('tabVocab').onclick=()=>switchTab('vocab');
-$('sheetHandle').onclick=toggleExpanded;
+let suppressHandleClick=false;
+$('sheetHandle').onclick=()=>{if(suppressHandleClick){suppressHandleClick=false;return}toggleExpanded()};
 $('sheetHandle').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleExpanded()}};
 let touchStart=null;const handle=$('sheetHandle');
 handle.addEventListener('touchstart',e=>{touchStart=e.touches[0].clientY},{passive:true});
-handle.addEventListener('touchend',e=>{if(touchStart===null)return;const delta=e.changedTouches[0].clientY-touchStart;touchStart=null;if(delta< -50){expanded=true;$('sheet').classList.add('expanded')}else if(delta>80){if(expanded){expanded=false;$('sheet').classList.remove('expanded')}else closeSheet()}},{passive:true});
+handle.addEventListener('touchend',e=>{if(touchStart===null)return;const delta=e.changedTouches[0].clientY-touchStart;touchStart=null;
+ if(delta< -50||delta>80){suppressHandleClick=true;setTimeout(()=>suppressHandleClick=false,550)}
+ if(delta< -50){expanded=true;$('sheet').classList.add('expanded')}else if(delta>80){if(expanded){expanded=false;$('sheet').classList.remove('expanded')}else closeSheet()}
+},{passive:true});
 function next(){
  const s=session();if(!s)return;closeSheet();
  if(s.index<s.ids.length-1){s.index++;persist();render();window.scrollTo({top:0,behavior:'instant'});return}
