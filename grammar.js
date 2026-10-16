@@ -354,7 +354,7 @@ $('next').onclick=next;$('overview').onclick=openOverview;$('favorite').onclick=
 $('hintToggle').onclick=()=>{const el=$('translateHint');el.hidden=!el.hidden;$('hintToggle').textContent=el.hidden?'显示题目中文':'隐藏题目中文'};
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){if(quickWord.word)closeWordQuick();else if(activeModal)closeModal();else if(activeSheet)closeSheet();return}
- if(activeModal||activeSheet)return;
+ if(activeModal||activeSheet||quickWord.word)return;
  if(/^[1-4]$/.test(e.key)&&!done(question()))answer(+e.key-1);
  if(e.key==='ArrowRight'&&e.target.tagName!=='TEXTAREA')next();
 });
