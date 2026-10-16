@@ -8,9 +8,6 @@ const EXTRA=typeof window.buildJLPTGrammarBank==='function'?window.buildJLPTGram
 const BANK=ORIGINAL.concat(EXTRA);
 const BANK_COUNT=EXTRA.length;
 const BYID=new Map(BANK.map(q=>[q.id,q])),STORE='jlptGrammarPracticeV1',LEGACY='jlptPracticeV2State';
-const TERMS={
-'店':'店铺','客':'客人','予算':'预算','料理':'料理','内容':'内容','変':'改变','能力':'能力','応':'根据；适应','仕事':'工作','任':'委托；交给','比':'比较','先立':'在……之前','向':'朝向','忙':'忙碌','食事':'用餐','抜':'省略；不吃','体':'身体','安':'便宜','必要':'必要','買':'购买','試験':'考试','受験者':'考生','注意事項':'注意事项','説明':'说明','開会':'开会','会長':'会长','挨拶':'问候；致辞','彼女':'她','日本':'日本','十年':'十年','住':'居住','日本語':'日语','自然':'自然','人気':'人气','大雨':'大雨','川':'河流','水':'水','台風':'台风','電車':'电车','止':'停止','違':'不同；错误','年齢':'年龄','誰':'谁','参加':'参加','経験':'经验','有無':'有无','応募':'报名；应聘','今年':'今年','売上':'营业额','去年':'去年','大幅':'大幅度','増':'增加','東京':'东京','私':'我','町':'城镇','人':'人','多':'多','彼':'他','英語':'英语','中国語':'中文','話':'说话','雨':'雨','強':'强烈','風':'风','吹':'吹','一度':'一次','引':'拉；引领','受':'接受','最後':'最后','責任':'责任','持':'持有；承担','約束':'约定','必':'一定','守':'遵守','映画':'电影','子供':'小孩','大人':'成人','味':'味道','値段':'价格','魅力':'魅力','反':'相反','限':'限定','来':'来','毎日':'每天','使':'使用','宿題':'作业','寝':'睡觉','明日':'明天','早':'早','今日':'今天','毎朝':'每天早上','走':'跑步','忘':'忘记','遅刻':'迟到','出':'出发；出去','荷物':'行李','重':'沉重','一人':'一个人','運':'搬运','字':'字','小':'小','読':'读','降':'下（雨）','試合':'比赛','予定':'计划；预定','通':'按照；经过','行':'进行；实行','勉強':'学习','間違':'错误','旅行':'旅行','前':'之前','予約':'预约','単語':'单词','復習':'复习','先生':'老师','過':'度过','元気':'健康；精神','存':'想；认为（谦让语）','申':'说（谦让语）','上':'上升；提出','部長':'部长','資料':'资料','覧':'看（尊敬语）','本':'书','先日':'前几天','拝見':'拜读（谦让语）','練習':'练习','少':'少；一点','漢字':'汉字','出発':'出发','家':'家','着':'到达','若':'年轻','挑戦':'挑战','熱':'发烧；热','学校':'学校','休':'休息；缺课','来年':'明年','留学':'留学','友達':'朋友','頼':'请求；拜托','手伝':'帮忙','妹':'妹妹','教':'教','昨日':'昨天','疲':'疲劳','電気':'电灯；电力','開':'打开'
-};
 const defaults={favorites:{},wrong:{},answers:{},notes:{},reports:{},words:{},prefs:{level:'N2',furigana:true,autoExplain:true,autoSound:false},session:null};
 function load(){try{const x=JSON.parse(localStorage.getItem(STORE)||'null');if(!x||typeof x!=='object'||Array.isArray(x))return structuredFallback();return {...defaults,...x, favorites:x.favorites||{},wrong:x.wrong||{},answers:x.answers||{},notes:x.notes||{},reports:x.reports||{},words:x.words||{},prefs:{...defaults.prefs,...(x.prefs||{})}}}catch(e){return structuredFallback()}}
 function structuredFallback(){return {favorites:{},wrong:{},answers:{},notes:{},reports:{},words:{},prefs:{...defaults.prefs},session:null}}
@@ -23,21 +20,22 @@ function furigana(s,decorate=false){
  return x;
 }
 function typedVocab(q){
- const raw=[];
- if(Array.isArray(q.vocab)){for(const v of q.vocab)raw.push({j:v[0],zh:v[1]})}
- else{
-  for(const s of [q.q,q.ex,q.o[q.a]?.[0]||'']){
-   for(const m of String(s).matchAll(/\[([^\]|]+)\|([^\]]+)\]/g)){
-    raw.push({j:'['+m[1]+'|'+m[2]+']',zh:TERMS[m[1]]||'释义待补充'});
-   }
-  }
-  for(const o of q.o){
-   if(o[0]&&!raw.some(x=>strip(x.j)===strip(o[0]))&&raw.length<11)raw.push({j:o[0],zh:o[1]});
-  }
+ // Vocabulary contains *real lexical words from the sentence*, never the four grammar choices.
+ const source=window.JLPT_GRAMMAR_WORD_CARDS||{};
+ const rows=q.generated?source.bySentence?.[q.ex]:source.byQuestion?.[q.id];
+ if(!Array.isArray(rows))return [];
+ const context=strip((q.q||'')+' '+(q.ex||''));
+ const result=[],seen=new Set();
+ for(const item of rows){
+  if(!Array.isArray(item)||item.length<4)continue;
+  const [word,kana,zh,en]=item.map(x=>String(x||'').trim());
+  if(!word||!kana||!context.includes(word)||!zh&&!en||seen.has(word))continue;
+  if(!/^[ぁ-ゖァ-ヺー]+$/.test(kana))continue;
+  if(!/^[ぁ-ゖァ-ヺ一-龯々ヶ]+$/.test(word))continue;
+  seen.add(word);result.push({word,kana,zh,en});
+  if(result.length>=7)break;
  }
- const out=[],seen=new Set();
- for(const x of raw){const key=strip(x.j);if(!key||seen.has(key))continue;seen.add(key);out.push(x);if(out.length>=14)break}
- return out;
+ return result;
 }
 function candidate(level,mode){
  return BANK.filter(q=>q.l===level&&(mode==='all'||(mode==='wrong'?!!state.wrong[q.id]:!!state.favorites[q.id])));
@@ -126,12 +124,20 @@ function showSheetContent(){
  $('speakExample').onclick=()=>speak(q.ex);
  }else{
   const terms=typedVocab(q);
-  $('sheetContent').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:15px"><b>本题重点单词 · '+terms.length+'个</b><span class="chip">'+q.l+'</span></div><div class="vocab-list">'+terms.map((v,i)=>{
-  const key=strip(v.j);
-  return '<div class="vocab-card"><div class="vocab-main"><strong>'+furigana(v.j)+'</strong><div class="kana">'+safe(v.j.match(/\|([^\]]+)\]/)?.[1]||'')+'</div><div class="definition">◆ '+safe(v.zh)+'</div></div><div class="vocab-controls"><button data-termstar="'+i+'" class="'+(state.words[key]?'active':'')+'" aria-label="'+(state.words[key]?'取消收藏':'收藏')+safe(key)+'">'+(state.words[key]?'★':'☆')+'</button><button data-termspeak="'+i+'" aria-label="朗读'+safe(key)+'">♬</button></div></div>';
- }).join('')+'</div><p style="font-size:12px;color:#859499;margin-top:16px">词汇收藏仅保存在当前浏览器，未核实中文的词会标记为「释义待补充」。</p>';
-  $('sheetContent').querySelectorAll('[data-termstar]').forEach(b=>b.onclick=()=>{const k=strip(terms[+b.dataset.termstar].j);if(state.words[k])delete state.words[k];else state.words[k]=true;persist();showSheetContent()});
-  $('sheetContent').querySelectorAll('[data-termspeak]').forEach(b=>b.onclick=()=>speak(terms[+b.dataset.termspeak].j));
+  const cards=terms.length?terms.map((v,i)=>{
+   const word=safe(v.word),reading=safe(v.kana),zh=v.zh?safe(v.zh):'';
+   const gloss=zh?'◆ 中文：'+zh:'◆ 英文原词义：'+safe(v.en);
+   return '<div class="vocab-card"><div class="vocab-main"><strong>'+word+'</strong><div class="kana">「'+reading+'」</div><div class="definition">'+gloss+'</div></div><div class="vocab-controls"><button data-termstar="'+i+'" class="'+(state.words[v.word]?'active':'')+'" aria-label="'+(state.words[v.word]?'取消收藏':'收藏')+word+'">'+(state.words[v.word]?'★':'☆')+'</button><button data-termspeak="'+i+'" aria-label="朗读'+word+'">♬</button></div></div>';
+  }).join(''):'<div class="explain-box">这一题暂时没有匹配到可核对读音和词义的独立日语单词，因此不会把语法选项当成单词显示。</div>';
+  $('sheetContent').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:15px"><b>例句中的真实单词 · '+terms.length+'个</b><span class="chip">'+q.l+'</span></div><div class="vocab-list">'+cards+'</div><p style="font-size:12px;color:#859499;margin-top:16px">词汇均来自题目或例句；仅在词义来源可靠时显示读音。中文待补充的条目会明确标为英文词义。☆可收藏，♬可朗读。</p>';
+  $('sheetContent').querySelectorAll('[data-termstar]').forEach(b=>b.onclick=()=>{
+   const item=terms[+b.dataset.termstar];if(!item)return;
+   if(state.words[item.word])delete state.words[item.word];else state.words[item.word]=true;
+   persist();showSheetContent();
+  });
+  $('sheetContent').querySelectorAll('[data-termspeak]').forEach(b=>b.onclick=()=>{
+   const item=terms[+b.dataset.termspeak];if(item)speak(item.word);
+  });
  }
 }
 function openSheet(tab='explain'){
