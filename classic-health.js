@@ -42,12 +42,12 @@ function runExtraScript(src){
  });
 }
 async function ensure(){
- for(const [fun,src] of registry){
-  if(typeof window[fun]==='function')continue;
-  const ok=await runExtraScript(src);
-  if(ok&&typeof window[fun]==='function')state.recovered.push(fun);
-  else state.missing.push(fun);
- }
+ const pending=registry.filter(([fun])=>typeof window[fun]!=='function');
+ await Promise.all(pending.map(async ([fun,src])=>{
+   const ok=await runExtraScript(src);
+   if(ok&&typeof window[fun]==='function')state.recovered.push(fun);
+   else if(!state.missing.includes(fun))state.missing.push(fun);
+ }));
  return state.missing.length===0;
 }
 function apply(name,html){
