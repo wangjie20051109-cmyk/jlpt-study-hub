@@ -8,6 +8,8 @@ const QUESTIONS=Array.isArray(window.JLPT_LISTENING_QUESTIONS)?window.JLPT_LISTE
 const SHADOW=Array.isArray(window.JLPT_LISTENING_SHADOW)?window.JLPT_LISTENING_SHADOW:[];
 const EXAMPLES=window.JLPT_WORD_EXAMPLES||{},MANIFEST=window.STATIC_AUDIO_MANIFEST||{};
 const DATA={N2:window.JLPT_BULK_N2||[],N3:window.JLPT_BULK_N3||[]};
+const AUDIOWORDKEY='jlptListening1000V1';let audioWordState=readWordState();let audioWordIndex=0,audioWordCurrent=null,audioWordAnswered=false;
+function readWordState(){try{const s=JSON.parse(localStorage.getItem(AUDIOWORDKEY)||'{}');return {seen:Array.isArray(s.seen)?s.seen:[],wrong:Array.isArray(s.wrong)?s.wrong:[]}}catch(e){return {seen:[],wrong:[]}}}
 const SEENKEY='jlptListeningExamSeenV1',WRONGKEY='jlptListeningExamWrongV1',DEEPKEY='jlptListeningDeepV1',SHADOWKEY='jlptListeningShadowV1';
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch(e){return fallback}}
 function save(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(e){$('audioStatus').textContent='当前浏览器无法保存数据，请检查存储权限。';return false}}
@@ -171,8 +173,49 @@ $('resetListening').onclick=()=>{
  if(!confirm('只清除新精听短句的自评和输入记录吗？旧站考试错题与跟读记录不会受影响。'))return;
  deep={};save(DEEPKEY,deep);di=0;renderDict();audioLabel('已清除新精听记录。原有听力错题及其他学习进度未改动。');
 };
+
+function wordKey(level,index){return level+'-'+index}
+function wordPool(){
+ const level=$('wordListenLevel').value;
+ return DATA[level].map((row,index)=>({level,index,row,id:wordKey(level,index)}))
+ .filter(x=>!$('wordListenWrong').checked||audioWordState.wrong.includes(x.id));
+}
+function renderWord(){
+ stop();const pool=wordPool();$('wordListenNext').disabled=!pool.length;$('wordListenPlay').disabled=!pool.length;
+ if(!pool.length){audioWordCurrent=null;$('wordListenOpts').innerHTML='';$('wordListenAnswer').classList.add('hidden');$('wordListenProgress').textContent='暂无错题。关闭“只练错题”继续练习。';$('wordListenBar').style.width='0%';return}
+ audioWordIndex=(audioWordIndex%pool.length+pool.length)%pool.length;audioWordCurrent=pool[audioWordIndex];audioWordAnswered=false;
+ const x=audioWordCurrent,idxs=Array.isArray(x.row[4])?x.row[4]:[];
+ let candidates=[x.index,...idxs.filter(i=>Number.isInteger(i)&&i>=0&&i<DATA[x.level].length&&i!==x.index)];
+ candidates=[...new Set(candidates)].slice(0,4);
+ for(let n=1;candidates.length<4&&n<DATA[x.level].length;n++){const i=(x.index+n*37)%DATA[x.level].length;if(!candidates.includes(i))candidates.push(i)}
+ // Stable deterministic rotation prevents always presenting the answer first.
+ candidates=candidates.slice(1).concat(candidates[0]);
+ $('wordListenOpts').innerHTML=candidates.map((idx,i)=>'<button class="opt" data-wordchoice="'+idx+'"><span>'+(i+1)+'</span>'+html(DATA[x.level][idx][0])+'</button>').join('');
+ $('wordListenOpts').querySelectorAll('[data-wordchoice]').forEach(b=>b.onclick=()=>answerWord(+b.dataset.wordchoice));
+ $('wordListenAnswer').classList.add('hidden');
+ $('wordListenProgress').textContent=x.level+' · '+(audioWordIndex+1)+' / '+pool.length+' · 已练 '+audioWordState.seen.length+' / 1000 · 错题 '+audioWordState.wrong.length;
+ $('wordListenBar').style.width=((audioWordIndex+1)/pool.length*100)+'%';
+}
+function answerWord(chosen){
+ if(!audioWordCurrent||audioWordAnswered)return;
+ audioWordAnswered=true;stop();
+ const x=audioWordCurrent,correct=chosen===x.index;
+ if(!audioWordState.seen.includes(x.id))audioWordState.seen.push(x.id);
+ audioWordState.wrong=audioWordState.wrong.filter(id=>id!==x.id);
+ if(!correct)audioWordState.wrong.push(x.id);
+ save(AUDIOWORDKEY,audioWordState);
+ $('wordListenOpts').querySelectorAll('[data-wordchoice]').forEach(b=>{b.disabled=true;if(+b.dataset.wordchoice===x.index)b.classList.add('ok');else if(+b.dataset.wordchoice===chosen)b.classList.add('no')});
+ $('wordListenAnswer').innerHTML='<h3>'+(correct?'✓ 听对了':'✕ 需要复习')+'</h3><div class="jp-script">'+html(x.row[0])+'（'+html(x.row[1])+'）</div><p class="translation">英文释义：'+html(x.row[2])+'</p><p class="mini">本题为听音辨词练习，发音来源与设备语音包有关。</p>';
+ $('wordListenAnswer').classList.remove('hidden');
+}
+$('wordListenLevel').onchange=()=>{audioWordIndex=0;renderWord()};
+$('wordListenWrong').onchange=()=>{audioWordIndex=0;renderWord()};
+$('wordListenPlay').onclick=()=>audioWordCurrent&&speak(audioWordCurrent.row[1]||audioWordCurrent.row[0]);
+$('wordListenStop').onclick=stop;
+$('wordListenNext').onclick=()=>{audioWordIndex++;renderWord()};
+
 window.addEventListener('beforeunload',stop);
-setQuizTypes();renderQuiz();renderDict();shadowTypes();renderShadow();
+setQuizTypes();renderQuiz();renderDict();shadowTypes();renderShadow();renderWord();
 const page=new URLSearchParams(location.search).get('tab');
 if(['quiz','dictation','shadow','sources'].includes(page))switchTab(page);
 })();
