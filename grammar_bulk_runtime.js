@@ -50,7 +50,7 @@ function asQ(r,level,idx,mode,all){
  let query,identifier;
  if(mode==='example'){
   query=matched?
-   '例句中【】标出的部分，对应哪一个语法点？\n'+ja.replace(matched,'【'+matched+'】'):
+   '例句中用【】标出的部分，对应哪一个语法点？\n'+ja.replace(matched,'【'+matched+'】'):
    '下面的例句主要体现哪一个语法结构？\n'+ja;
   identifier='bulk-grammar-'+level.toLowerCase()+'-ex-'+r[0]+'-'+(idx+1);
  }else{
