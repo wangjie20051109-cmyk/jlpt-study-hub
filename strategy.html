@@ -7,11 +7,11 @@
 <article class="card subject"><div class="emoji">🅰️</div><b>文字词汇</b><p>词汇认读、假名、常见易混词，做完可继续背词复习。</p><div class="actions" style="width:100%"><a id="vocabQuiz" href="./practice.html?level=N2&type=reading" class="btn primary small">专项试题</a><a href="./words.html" class="btn small">背单词</a></div></article>
 <article class="card subject"><div class="emoji">🧩</div><b>语法</b><p>四选一答题、语法接续、中文解释、每项排除理由。</p><div class="actions" style="width:100%"><a id="grammarQuiz" href="./practice.html?level=N2&type=grammar" class="btn primary small">专项试题</a><a href="./classic.html?section=grammar" class="btn small">语法库</a></div></article>
 <article class="card subject"><div class="emoji">📚</div><b>阅读理解</b><p>利用原网站现有阅读模块，训练理解文章与抓关键句。</p><div class="actions" style="width:100%"><a href="./classic.html?section=reading" class="btn primary small">进入阅读练习</a></div></article>
-<article class="card subject"><div class="emoji">🎧</div><b>听力训练</b><p>原有听力、跟读和音频练习继续保留，可以反复练习。</p><div class="actions" style="width:100%"><a href="./classic.html?section=listening" class="btn primary small">进入听力练习</a></div></article>
+<article class="card subject"><div class="emoji">🎧</div><b>听力训练</b><p>独立听力考试、精听听写和影子跟读，记录错题与进度。</p><div class="actions" style="width:100%"><a href="./listening.html" class="btn primary small">进入独立听力网站 ↗</a></div></article>
 </div>
 <section class="card" style="margin-top:20px"><h3>今天建议怎么学？</h3><div class="list"><div class="listrow"><span class="chip">15分钟</span><div><b>先背词</b><div class="desc">新词10个 + 复习到期词</div></div></div><div class="listrow"><span class="chip">20分钟</span><div><b>语法专项</b><div class="desc">先独立选择答案，提交后看四个选项原因</div></div></div><div class="listrow"><span class="chip">25分钟</span><div><b>听力与阅读</b><div class="desc">用原网站现有音频与阅读训练，记录错题</div></div></div></div></section>
 <div class="actions" style="margin-top:18px"><a href="./classic.html" class="btn ghost">打开经典学习站（全部功能）</a></div>
-<p class="notice">词汇模块题库为开源词表生成的模拟题。阅读和听力保留原网站已有训练内容，尚未扩充至与词汇相同的题量。</p>
+<p class="notice">词汇模块题库为开源词表生成的模拟题。阅读仍沿用原网站；听力已迁移到独立页面，并接入 GitHub 开源短句精听素材。</p>
 </main><script src="./site.js?v=20261016m1"></script><script>
 (function(){const buttons=[...document.querySelectorAll('[data-lv]')];let lv='N2';function draw(){buttons.forEach(b=>b.classList.toggle('active',b.dataset.lv===lv));document.getElementById('levelTag').textContent='当前：'+lv;document.querySelector('.hero h1').innerHTML='<span style="color:#ee3220">'+lv+'</span> '+(lv==='N2'?'冲刺训练':'基础补强');document.getElementById('vocabQuiz').href='./practice.html?level='+lv+'&type=reading';document.getElementById('grammarQuiz').href='./practice.html?level='+lv+'&type=grammar';}buttons.forEach(b=>b.onclick=()=>{lv=b.dataset.lv;draw()});draw()})();
 </script></body></html>
