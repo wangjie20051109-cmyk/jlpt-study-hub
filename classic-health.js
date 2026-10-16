@@ -73,7 +73,7 @@ function navigate(){
  if(node){node.scrollIntoView({block:'start'});state.navigation=section}
 }
 function summarize(){
- const sections=['vocab','grammar','reading','listening','review'];
+ const sections=['vocab','grammar','reading','review']; // 听力已独立迁移
  const entries=sections.map(s=>({key:s,exists:!!document.getElementById(s),nav:!!sectionButton(s)}));
  state.sections=entries;
  return entries;
