@@ -37,6 +37,113 @@ function typedVocab(q){
  }
  return result;
 }
+
+/* Highlight only verified lexical words from this question's vocabulary metadata.
+ * Preserve original [kanji|kana] ruby marks even when a term is not clickable. */
+function interactiveSentence(q,source){
+ const raw=String(source||''),marks=[],pattern=/\[([^|\]]+)\|([^\]]+)\]/g;
+ let plain='',prev=0,m;
+ while((m=pattern.exec(raw))){
+  plain+=raw.slice(prev,m.index);const start=plain.length;
+  plain+=m[1];marks.push({start,end:plain.length,kana:m[2]});prev=pattern.lastIndex;
+ }
+ plain+=raw.slice(prev);
+ const words=typedVocab(q),candidate=[];
+ words.forEach((w,index)=>{
+  let pos=plain.indexOf(w.word);
+  while(pos!==-1){candidate.push({start:pos,end:pos+w.word.length,index,length:w.word.length});pos=plain.indexOf(w.word,pos+1)}
+ });
+ candidate.sort((a,b)=>b.length-a.length||a.start-b.start);
+ const selected=[];
+ for(const v of candidate)if(!selected.some(x=>v.start<x.end&&v.end>x.start))selected.push(v);
+ selected.sort((a,b)=>a.start-b.start);
+ // Render the untouched part while retaining its original kanji ruby annotations.
+ function rest(start,end){
+  let html='',at=start;
+  for(const mark of marks){
+   if(mark.start<at||mark.start<start||mark.end>end)continue;
+   html+=safe(plain.slice(at,mark.start));
+   html+='<ruby>'+safe(plain.slice(mark.start,mark.end))+'<rt>'+safe(mark.kana)+'</rt></ruby>';
+   at=mark.end;
+  }
+  return html+safe(plain.slice(at,end));
+ }
+ let rendered='',at=0;
+ for(const term of selected){
+  if(term.start<at)continue;
+  rendered+=rest(at,term.start);
+  const word=words[term.index];
+  rendered+='<button type="button" class="inline-word" data-wordindex="'+term.index+'" aria-label="查看单词 '+safe(word.word)+' 的解释"><ruby>'+safe(word.word)+'<rt>'+safe(word.kana)+'</rt></ruby></button>';
+  at=term.end;
+ }
+ return rendered+rest(at,plain.length);
+}
+function bindInlineWords(container,q){
+ const words=typedVocab(q);
+ container.querySelectorAll('[data-wordindex]').forEach(button=>{
+  button.onclick=()=>{const term=words[Number(button.dataset.wordindex)];if(term)openWordQuick(term,q,button)};
+ });
+}
+const quickWord={word:null,question:null,focusTarget:null,details:false};
+function closeWordQuick(){
+ if(!quickWord.word)return;
+ quickWord.word=null;quickWord.question=null;quickWord.details=false;
+ $('wordQuick').classList.remove('open');$('wordQuick').setAttribute('aria-hidden','true');
+ $('wordQuickBackdrop').hidden=true;
+ const parent=$('sheetContent'),scroll=parent.scrollTop;
+ if(activeSheet&&sheetTab==='vocab'){showSheetContent();parent.scrollTop=scroll}
+ const focus=quickWord.focusTarget;quickWord.focusTarget=null;
+ if(focus&&focus.isConnected&&typeof focus.focus==='function')focus.focus();
+}
+function updateQuickFavorite(){
+ const item=quickWord.word;if(!item)return;
+ const starred=!!state.words[item.word],button=$('wordQuickFavorite');
+ button.textContent=starred?'★':'☆';button.classList.toggle('active',starred);
+ button.setAttribute('aria-pressed',String(starred));
+ button.setAttribute('aria-label',(starred?'取消收藏 ':'收藏 ')+item.word);
+}
+function openWordQuick(item,q,trigger){
+ if(!item||!q||!typedVocab(q).some(x=>x.word===item.word&&x.kana===item.kana))return;
+ if(quickWord.word)closeWordQuick();
+ quickWord.word=item;quickWord.question=q;quickWord.details=false;
+ quickWord.focusTarget=trigger||document.activeElement;
+ $('wordQuickTitle').textContent=item.word;
+ $('wordQuickKana').textContent='「'+item.kana+'」';
+ $('wordQuickTag').textContent=q.l+' · 单词速查';
+ $('wordQuickMeaning').innerHTML=item.zh?'<small>中文释义</small>'+safe(item.zh):'<small>英文原词义 · 中文待补充</small>'+safe(item.en);
+ $('wordQuickExtra').hidden=true;$('wordQuickExtra').innerHTML='';
+ $('wordQuickDetails').classList.remove('active');$('wordQuickDetails').textContent='▣ 详情';
+ $('wordQuickDictionary').href='https://jisho.org/search/'+encodeURIComponent(item.word);
+ updateQuickFavorite();
+ $('wordQuickBackdrop').hidden=false;$('wordQuick').classList.add('open');
+ $('wordQuick').setAttribute('aria-hidden','false');
+ $('closeWordQuick').focus();
+}
+function toggleQuickDetails(){
+ if(!quickWord.word)return;
+ quickWord.details=!quickWord.details;
+ const extra=$('wordQuickExtra'),item=quickWord.word,q=quickWord.question;
+ extra.hidden=!quickWord.details;
+ $('wordQuickDetails').classList.toggle('active',quickWord.details);
+ $('wordQuickDetails').textContent=quickWord.details?'▣ 收起详情':'▣ 详情';
+ if(!quickWord.details)return;
+ const example=strip(q.ex||''),prompt=strip(q.q||''),inExample=example.includes(item.word);
+ const sentence=inExample?example:prompt;
+ const comparison=inExample&&q.exzh?'<p class="word-quick-context">'+safe(q.exzh)+'</p>':'';
+ extra.innerHTML='<h3>本题中的用法</h3><p lang="ja">'+safe(sentence)+'</p>'+comparison+
+ '<h3>读音与学习记录</h3><p>'+safe(item.word)+' ／ '+safe(item.kana)+'</p>'+
+ '<p style="color:#b1b1b9;font-size:12px">卡片词义来自站内词汇资料；更多词性、常见搭配和例句请通过下方词典查询核对。</p>';
+}
+$('wordQuickBackdrop').onclick=closeWordQuick;
+$('closeWordQuick').onclick=closeWordQuick;
+$('wordQuickFavorite').onclick=()=>{
+ const item=quickWord.word;if(!item)return;
+ if(state.words[item.word])delete state.words[item.word];else state.words[item.word]=true;
+ persist();updateQuickFavorite();
+};
+$('wordQuickPlay').onclick=()=>{const item=quickWord.word;if(item)speak(item.kana)};
+$('wordQuickDetails').onclick=toggleQuickDetails;
+
 function candidate(level,mode){
  return BANK.filter(q=>q.l===level&&(mode==='all'||(mode==='wrong'?!!state.wrong[q.id]:!!state.favorites[q.id])));
 }
@@ -88,7 +195,8 @@ function render(){
  const levelBank=BANK.filter(x=>x.l===s.level),seenLevel=levelBank.filter(x=>!!state.answers[x.id]).length;
  $('statusText').title='本级语法题库 '+levelBank.length+'题，已做 '+seenLevel+'题';
  $('statusText').textContent=answered?(ok?'回答正确 · 查看解析':'回答错误 · 查看选项原因'):'本级已做 '+seenLevel+'/'+levelBank.length;
- $('prompt').innerHTML=furigana(q.q,true).replace(/（　）/g,'<span class="blank">＿＿</span>').replace(/【([^】]+)】/g,'<span class="keyterm">【$1】</span>');
+ $('prompt').innerHTML=interactiveSentence(q,q.q).replace(/（　）/g,'<span class="blank">＿＿</span>').replace(/【([^】]+)】/g,'<span class="keyterm">【$1】</span>');
+ bindInlineWords($('prompt'),q);
  $('translateHint').hidden=true;$('translateHint').textContent=q.zh;
  $('hintToggle').textContent='显示题目中文';
  $('choices').innerHTML=q.o.map((opt,i)=>{
@@ -118,25 +226,27 @@ function answer(idx){
 function showSheetContent(){
  const q=question();if(!q||!done(q)){closeSheet();return}
  if(sheetTab==='explain'){
-  $('sheetContent').innerHTML='<h2>句子与中文意思</h2><div class="explain-box"><div class="explain-jp">'+furigana(q.q.replace('（　）',q.o[q.a][0]))+'</div><div class="explain-cn">'+safe(q.zh)+'</div></div><h2>语法要点</h2><p><b>'+furigana(q.pattern)+'</b></p><p>'+safe(q.tip)+'</p><h3>正确答案与四个选项逐项分析</h3>'+q.o.map((o,i)=>{
+  $('sheetContent').innerHTML='<h2>句子与中文意思</h2><div class="explain-box"><div class="explain-jp">'+interactiveSentence(q,q.q.replace('（　）',q.o[q.a][0]))+'</div><div class="explain-cn">'+safe(q.zh)+'</div></div><h2>语法要点</h2><p><b>'+furigana(q.pattern)+'</b></p><p>'+safe(q.tip)+'</p><h3>正确答案与四个选项逐项分析</h3>'+q.o.map((o,i)=>{
   const ok=i===q.a;return '<div class="answer-reason'+(ok?' right':'')+'"><div class="reason-hd"><span class="no">'+(i+1)+'</span><b>'+furigana(o[0])+'</b></div><div class="reason-meaning">中文：'+safe(o[1])+'</div><div class="why"><span class="verdict">'+(ok?'✓ 正确选项':'✕ 不适合')+'</span><br>'+safe(o[2])+'</div></div>';
  }).join('')+'<h3>易混语法</h3><div class="explain-box">'+safe(q.mix)+'</div><h3>补充例句</h3><div class="explain-box"><div class="explain-jp">'+furigana(q.ex)+'</div><div class="explain-cn">'+safe(q.exzh)+'</div></div><button type="button" id="speakExample" class="text-btn">🔊 播放补充例句</button>';
  $('speakExample').onclick=()=>speak(q.ex);
+  bindInlineWords($('sheetContent'),q);
  }else{
   const terms=typedVocab(q);
   const cards=terms.length?terms.map((v,i)=>{
    const word=safe(v.word),reading=safe(v.kana),zh=v.zh?safe(v.zh):'';
    const gloss=zh?'◆ 中文：'+zh:'◆ 英文原词义：'+safe(v.en);
-   return '<div class="vocab-card"><div class="vocab-main"><strong>'+word+'</strong><div class="kana">「'+reading+'」</div><div class="definition">'+gloss+'</div></div><div class="vocab-controls"><button data-termstar="'+i+'" class="'+(state.words[v.word]?'active':'')+'" aria-label="'+(state.words[v.word]?'取消收藏':'收藏')+word+'">'+(state.words[v.word]?'★':'☆')+'</button><button data-termspeak="'+i+'" aria-label="朗读'+word+'">♬</button></div></div>';
+   return '<div class="vocab-card"><div class="vocab-main"><button type="button" class="vocab-open" data-openword="'+i+'" aria-label="打开 '+word+' 的词典卡片"><strong>'+word+'</strong><div class="kana">「'+reading+'」</div><div class="definition">'+gloss+'</div><div class="vocab-hint">点击查看单词解释 ›</div></button></div><div class="vocab-controls"><button type="button" data-termstar="'+i+'" class="'+(state.words[v.word]?'active':'')+'" aria-label="'+(state.words[v.word]?'取消收藏':'收藏')+word+'">'+(state.words[v.word]?'★':'☆')+'</button><button type="button" data-termspeak="'+i+'" aria-label="朗读'+word+'">♬</button></div></div>';
   }).join(''):'<div class="explain-box">这一题暂时没有匹配到可核对读音和词义的独立日语单词，因此不会把语法选项当成单词显示。</div>';
   $('sheetContent').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:15px"><b>例句中的真实单词 · '+terms.length+'个</b><span class="chip">'+q.l+'</span></div><div class="vocab-list">'+cards+'</div><p style="font-size:12px;color:#859499;margin-top:16px">词汇均来自题目或例句；仅在词义来源可靠时显示读音。中文待补充的条目会明确标为英文词义。☆可收藏，♬可朗读。</p>';
+  $('sheetContent').querySelectorAll('[data-openword]').forEach(b=>b.onclick=()=>{const item=terms[Number(b.dataset.openword)];if(item)openWordQuick(item,q,b)});
   $('sheetContent').querySelectorAll('[data-termstar]').forEach(b=>b.onclick=()=>{
    const item=terms[+b.dataset.termstar];if(!item)return;
    if(state.words[item.word])delete state.words[item.word];else state.words[item.word]=true;
    persist();showSheetContent();
   });
   $('sheetContent').querySelectorAll('[data-termspeak]').forEach(b=>b.onclick=()=>{
-   const item=terms[+b.dataset.termspeak];if(item)speak(item.word);
+   const item=terms[+b.dataset.termspeak];if(item)speak(item.kana);
   });
  }
 }
@@ -149,9 +259,10 @@ function openSheet(tab='explain'){
  showSheetContent();$('sheetContent').scrollTop=0;
 }
 function closeSheet(){
+ if(quickWord.word)closeWordQuick();
  activeSheet=false;$('sheet').classList.remove('open','expanded');$('sheet').setAttribute('aria-hidden','true');$('sheetBackdrop').hidden=true;
 }
-function switchTab(t){if(!activeSheet)openSheet(t);else{sheetTab=t;$('tabExplanation').classList.toggle('active',t==='explain');$('tabVocab').classList.toggle('active',t==='vocab');$('tabExplanation').setAttribute('aria-selected',String(t==='explain'));$('tabVocab').setAttribute('aria-selected',String(t==='vocab'));showSheetContent();$('sheetContent').scrollTop=0}}
+function switchTab(t){if(quickWord.word)closeWordQuick();if(!activeSheet)openSheet(t);else{sheetTab=t;$('tabExplanation').classList.toggle('active',t==='explain');$('tabVocab').classList.toggle('active',t==='vocab');$('tabExplanation').setAttribute('aria-selected',String(t==='explain'));$('tabVocab').setAttribute('aria-selected',String(t==='vocab'));showSheetContent();$('sheetContent').scrollTop=0}}
 function toggleExpanded(){expanded=!expanded;$('sheet').classList.toggle('expanded',expanded)}
 $('sheetBackdrop').onclick=closeSheet;$('closeSheet').onclick=closeSheet;
 $('tabExplanation').onclick=()=>switchTab('explain');$('tabVocab').onclick=()=>switchTab('vocab');
@@ -165,11 +276,12 @@ handle.addEventListener('touchend',e=>{if(touchStart===null)return;const delta=e
  if(delta< -50){expanded=true;$('sheet').classList.add('expanded')}else if(delta>80){if(expanded){expanded=false;$('sheet').classList.remove('expanded')}else closeSheet()}
 },{passive:true});
 function next(){
- const s=session();if(!s)return;closeSheet();
+ const s=session();if(!s)return;if(quickWord.word)closeWordQuick();closeSheet();
  if(s.index<s.ids.length-1){s.index++;persist();render();window.scrollTo({top:0,behavior:'instant'});return}
  showSummary();
 }
 function showModal(title,body,actions=[]){
+ if(quickWord.word)closeWordQuick();
  closeSheet();activeModal=title;
  $('modalTitle').textContent=title;$('modalBody').innerHTML=body;$('modalActions').innerHTML=actions.map((a,i)=>'<button type="button" data-action="'+i+'" class="'+(a.primary?'primary':'')+'">'+safe(a.text)+'</button>').join('');
  $('modalBackdrop').hidden=false;
@@ -241,7 +353,7 @@ function openSettings(){
 $('next').onclick=next;$('overview').onclick=openOverview;$('favorite').onclick=toggleFavorite;$('report').onclick=openReport;$('settings').onclick=openSettings;$('note').onclick=openNote;$('openExplanation').onclick=()=>openSheet('explain');
 $('hintToggle').onclick=()=>{const el=$('translateHint');el.hidden=!el.hidden;$('hintToggle').textContent=el.hidden?'显示题目中文':'隐藏题目中文'};
 document.addEventListener('keydown',e=>{
- if(e.key==='Escape'){if(activeModal)closeModal();else if(activeSheet)closeSheet();return}
+ if(e.key==='Escape'){if(quickWord.word)closeWordQuick();else if(activeModal)closeModal();else if(activeSheet)closeSheet();return}
  if(activeModal||activeSheet)return;
  if(/^[1-4]$/.test(e.key)&&!done(question()))answer(+e.key-1);
  if(e.key==='ArrowRight'&&e.target.tagName!=='TEXTAREA')next();
