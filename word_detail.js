@@ -63,12 +63,143 @@ function targetRuby(sentence,word,kana){
  let s=String(sentence||'');if(!s.includes(word))return esc(s);
  return s.split(word).map(esc).join('<ruby>'+esc(word)+'<rt>'+esc(kana)+'</rt></ruby>');
 }
+
+/* Quick dictionary popup for real vocabulary, with existing word-list bookmarks preserved. */
+const quickIndex=new Map(),quickExampleLinks=[];
+for(const levelKey of ['N2','N3']){
+ for(const w of arr[levelKey]){
+  if(!w.word||!/^[ぁ-ゖァ-ヺー]+$/.test(w.kana))continue;
+  const p=EXAMPLES[w.id]?.pos||'';
+  quickIndex.set(w.word,{word:w.word,kana:w.kana,zh:ZH[w.word]||'',en:w.meaning||'',level:w.level,id:w.id,pos:p?posName(p):''});
+ }
+}
+const sharedCards=window.JLPT_GRAMMAR_WORD_CARDS||{};
+for(const group of [sharedCards.bySentence||{},sharedCards.byQuestion||{}]){
+ for(const cards of Object.values(group)){
+  if(!Array.isArray(cards))continue;
+  for(const row of cards){
+   const [word,kana,zh,en]=row;
+   if(!word||!kana||!zh&&!en)continue;
+   const old=quickIndex.get(word);
+   quickIndex.set(word,{...old,word,kana,zh:zh||old?.zh||'',en:en||old?.en||'',level:old?.level||'词汇',pos:old?.pos||''});
+  }
+ }
+}
+let quickCurrent=null,quickExample=null,quickSource=null,quickPrevFocus=null,quickExpanded=false;
+function tapWordCandidates(sentence,w,ex){
+ const raw=String(sentence||''),marks=[],re=/([\u3400-\u9fff々ヶ]+)\(([ぁ-ゖー]+)\)/g;
+ let plain='',at=0,m;
+ while((m=re.exec(raw))){plain+=raw.slice(at,m.index);let start=plain.length;plain+=m[1];marks.push({start,end:plain.length,kana:m[2]});at=re.lastIndex}
+ plain+=raw.slice(at);
+ const alternatives=[...quickIndex.values()];
+ const actual=quickIndex.get(w.word)||{word:w.word,kana:w.kana,zh:ZH[w.word]||'',en:w.meaning||'',level:w.level,id:w.id};
+ const matchSet=new Map([[actual.word,actual]]);
+ for(const v of alternatives)if(v.word.length>=2&&plain.includes(v.word))matchSet.set(v.word,v);
+ const candidates=[];
+ for(const entry of matchSet.values()){
+  let pos=plain.indexOf(entry.word);
+  while(pos!==-1){candidates.push({start:pos,end:pos+entry.word.length,v:entry,length:entry.word.length});pos=plain.indexOf(entry.word,pos+1)}
+ }
+ candidates.sort((a,b)=>b.length-a.length||a.start-b.start);
+ const choices=[];for(const v of candidates)if(!choices.some(c=>v.start<c.end&&v.end>c.start))choices.push(v);
+ choices.sort((a,b)=>a.start-b.start);
+ function unchanged(a,b){
+  let output='',cursor=a;
+  for(const mark of marks){
+   if(mark.start<a||mark.start<cursor||mark.end>b)continue;
+   output+=esc(plain.slice(cursor,mark.start))+'<ruby>'+esc(plain.slice(mark.start,mark.end))+'<rt>'+esc(mark.kana)+'</rt></ruby>';
+   cursor=mark.end;
+  }
+  return output+esc(plain.slice(cursor,b));
+ }
+ let result='',cursor=0;
+ for(const c of choices){
+  if(c.start<cursor)continue;
+  result+=unchanged(cursor,c.start);
+  const index=quickExampleLinks.push({item:c.v,example:plain,translation:ex.zh?'中文：'+ex.zh:ex.en?'English: '+ex.en:''})-1;
+  result+='<button type="button" class="inline-word" data-examplequick="'+index+'" aria-label="查看 '+esc(c.v.word)+' 的词典卡片"><ruby>'+esc(c.v.word)+'<rt>'+esc(c.v.kana)+'</rt></ruby></button>';
+  cursor=c.end;
+ }
+ return result+unchanged(cursor,plain.length);
+}
+function wordSaved(item){
+ if(item.id)return !!words.items[item.id]?.starred;
+ try{
+  const data=JSON.parse(localStorage.getItem('jlptGrammarPracticeV1')||'{}');
+  return !!data.words?.[item.word];
+ }catch(e){return false}
+}
+function bookmarkQuickWord(){
+ const item=quickCurrent;if(!item)return;
+ if(item.id){
+  const record=words.items[item.id]||{};
+  words.items[item.id]={...record,starred:!record.starred};save(KEY,words);
+  if(detail?.id===item.id){$('starIcon').textContent=words.items[item.id].starred?'★':'☆';$('star').classList.toggle('active',words.items[item.id].starred)}
+ }else{
+  try{
+   const state=JSON.parse(localStorage.getItem('jlptGrammarPracticeV1')||'{}');
+   state.words=state.words||{};
+   if(state.words[item.word])delete state.words[item.word];else state.words[item.word]=true;
+   localStorage.setItem('jlptGrammarPracticeV1',JSON.stringify(state));
+  }catch(e){alert('当前浏览器不允许保存收藏，请检查存储设置')}
+ }
+ updateQuickStar();
+}
+function updateQuickStar(){
+ if(!quickCurrent)return;
+ const starred=wordSaved(quickCurrent),button=$('wordQuickFavorite');
+ button.textContent=starred?'★':'☆';button.classList.toggle('active',starred);
+ button.setAttribute('aria-pressed',String(starred));
+ button.setAttribute('aria-label',(starred?'取消收藏 ':'收藏 ')+quickCurrent.word);
+}
+function closeQuickWord(){
+ if(!quickCurrent)return;
+ quickCurrent=null;quickExample=null;quickExpanded=false;
+ $('wordQuick').classList.remove('open');$('wordQuick').setAttribute('aria-hidden','true');
+ $('wordQuickBackdrop').hidden=true;
+ if(quickPrevFocus?.isConnected&&typeof quickPrevFocus.focus==='function')quickPrevFocus.focus();
+ quickPrevFocus=null;
+}
+function openQuickWord(item,example='',translation='',focusTarget=null){
+ if(!item||!item.word||!item.kana)return;
+ if(quickCurrent)closeQuickWord();
+ quickCurrent=item;quickExample=example;quickSource=translation;quickExpanded=false;
+ quickPrevFocus=focusTarget||document.activeElement;
+ $('wordQuickTitle').textContent=item.word;$('wordQuickKana').textContent='「'+item.kana+'」';
+ $('wordQuickTag').textContent=(item.pos?item.pos+' · ':'')+(item.level||'')+' · 词汇';
+ $('wordQuickMeaning').innerHTML=item.zh?'<small>中文释义</small>'+esc(item.zh):'<small>英文原词义 · 中文待补充</small>'+esc(item.en||'暂无可靠释义');
+ $('wordQuickExtra').hidden=true;$('wordQuickExtra').innerHTML='';
+ $('wordQuickDetails').textContent='▣ 详情';$('wordQuickDetails').classList.remove('active');
+ $('wordQuickDictionary').href='https://jisho.org/search/'+encodeURIComponent(item.word);
+ updateQuickStar();
+ $('wordQuickBackdrop').hidden=false;$('wordQuick').classList.add('open');
+ $('wordQuick').setAttribute('aria-hidden','false');$('closeWordQuick').focus();
+}
+function expandQuickWord(){
+ if(!quickCurrent)return;
+ quickExpanded=!quickExpanded;$('wordQuickExtra').hidden=!quickExpanded;
+ $('wordQuickDetails').textContent=quickExpanded?'▣ 收起详情':'▣ 详情';$('wordQuickDetails').classList.toggle('active',quickExpanded);
+ if(!quickExpanded)return;
+ const item=quickCurrent;
+ const ctx=quickExample?'<h3>出现于例句</h3><p lang="ja">'+esc(quickExample)+'</p>'+(quickSource?'<p>'+esc(quickSource)+'</p>':''):'';
+ const link=item.id&&detail?.id!==item.id?'<p><a href="./word-detail.html?id='+encodeURIComponent(item.id)+'" style="text-decoration:underline;color:#ffb0ba">打开这个单词的完整学习页 ↗</a></p>':'';
+ $('wordQuickExtra').innerHTML=ctx+'<h3>单词与读音</h3><p>'+esc(item.word)+' ／ '+esc(item.kana)+'</p>'+link+
+  '<p style="font-size:12px;color:#bebec6">日语词条只在读音与释义有数据时显示。其他用法和词性可通过下方词典查询。</p>';
+}
+$('wordQuickBackdrop').onclick=closeQuickWord;$('closeWordQuick').onclick=closeQuickWord;
+$('wordQuickFavorite').onclick=bookmarkQuickWord;
+$('wordQuickPlay').onclick=()=>{if(quickCurrent)speak(quickCurrent.kana)};
+$('wordQuickDetails').onclick=expandQuickWord;
+
 function showWord(w,update=true){
  if(!w)return;
+ if(quickCurrent)closeQuickWord();
  detail=w;level=w.level;index=w.index??0;
  if(playing)stop();
  const extra=EXAMPLES[w.id]||{},cn=ZH[w.word],extraText=extra.gloss||w.meaning;
  $('word').textContent=w.word;
+ $('word').setAttribute('role','button');$('word').tabIndex=0;
+ $('word').setAttribute('aria-label','点击查看 '+w.word+' 的单词速查卡');
  const r=extra.romaji||romaji(w.kana);
  $('romaji').textContent=r;
  $('pos').textContent=w.demo?'拟态词 · 副词 · サ变动词':posName(extra.pos);
@@ -79,12 +210,14 @@ function showWord(w,update=true){
  const examples=curated[w.word]||(extra.ja?[{ja:extra.ja,en:extra.en,fromSource:true}]:[]);
  $('examplesCount').textContent=examples.length?examples.length+' 句':'待补充';
  if(examples.length){
+ quickExampleLinks.length=0;
  $('examples').innerHTML=examples.map((ex,i)=>{
- const phrase=ex.fromSource?targetRuby(ex.ja,w.word,w.kana):withMarkings(ex.ja);
+ const phrase=tapWordCandidates(ex.ja,w,ex);
  const trans=ex.zh?'中文：'+ex.zh:ex.en?'English: '+ex.en:'';
  return '<div class="exblock"><div class="extext"><div class="jp">'+phrase+'</div><div class="cn">'+esc(trans)+'</div></div><button type="button" class="sound exsound" data-ex="'+i+'" aria-label="播放第'+(i+1)+'条例句">◖))</button></div>';
  }).join('');
  $('examples').querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>speak(examples[Number(b.dataset.ex)].ja));
+ $('examples').querySelectorAll('[data-examplequick]').forEach(b=>b.onclick=()=>{const obj=quickExampleLinks[Number(b.dataset.examplequick)];if(obj)openQuickWord(obj.item,obj.example,obj.translation,b)});
  }else $('examples').innerHTML='<div class="empty">这条词目前没有经过核对的完整例句。可以先听发音、学习词义，例句会继续补充。</div>';
  const state=(words.items||{})[w.id]||{};
  $('starIcon').textContent=state.starred?'★':'☆';$('star').classList.toggle('active',!!state.starred);
@@ -125,6 +258,8 @@ function listen(){
 }
 const requested=params.get('id'),found=requested==='demo-iraira'?demo:[...arr.N2,...arr.N3].find(x=>x.id===requested);
 showWord(found||arr.N2[0],false);
+$('word').onclick=()=>{if(detail)openQuickWord(quickIndex.get(detail.word)||{word:detail.word,kana:detail.kana,zh:ZH[detail.word]||'',en:detail.meaning||'',level:detail.level,id:detail.id},'','',$('word'))};
+$('word').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('word').click()}};
 $('back').onclick=()=>{stop();location.href='./words.html?level='+level+'#wordList'};
 $('mainSpeak').onclick=()=>detail&&speak(detail.word);
 $('more').onclick=()=>$('moreinfo').classList.toggle('visible');
@@ -136,8 +271,8 @@ $('note').onclick=()=>{if(!detail)return;$('noteWord').textContent=detail.word+'
 function closeNote(){$('noteDialog').hidden=true;$('noteDialog').style.display='none'}
 $('noteCancel').onclick=closeNote;$('noteDialog').onclick=e=>{if(e.target===$('noteDialog'))closeNote()};
 $('noteSave').onclick=()=>{if(!detail)return;notes[detail.id]=$('noteText').value.trim();save(NOTES,notes);$('note').classList.toggle('active',!!notes[detail.id]);closeNote()};
-document.addEventListener('keydown',e=>{if(!$('noteDialog').hidden){if(e.key==='Escape')closeNote();return}if(e.key==='ArrowRight')navigate(1);if(e.key==='ArrowLeft')navigate(-1);if(e.key==='Escape')$('back').click()});
+document.addEventListener('keydown',e=>{if(quickCurrent){if(e.key==='Escape')closeQuickWord();return}if(!$('noteDialog').hidden){if(e.key==='Escape')closeNote();return}if(e.key==='ArrowRight')navigate(1);if(e.key==='ArrowLeft')navigate(-1);if(e.key==='Escape')$('back').click()});
 let touch=null;
-document.addEventListener('touchstart',e=>{if(e.touches.length!==1||e.target.closest('button,textarea'))return;touch={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
+document.addEventListener('touchstart',e=>{if(quickCurrent)return;if(e.touches.length!==1||e.target.closest('button,textarea'))return;touch={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
 document.addEventListener('touchend',e=>{if(!touch)return;const t=e.changedTouches[0];const dx=t.clientX-touch.x,dy=t.clientY-touch.y;touch=null;if(Math.abs(dx)>85&&Math.abs(dx)>Math.abs(dy)*1.5)navigate(dx<0?1:-1)},{passive:true});
 })();
