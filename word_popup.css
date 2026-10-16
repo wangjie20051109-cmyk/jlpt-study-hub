@@ -1,0 +1,32 @@
+/* Standalone word-detail popup styles; shared visual design with grammar quick-lookup. */
+/* Tap-to-define words in example sentences and the vocabulary sheet */
+.inline-word{display:inline;vertical-align:baseline;border:0;border-bottom:1.5px dotted #11a99c;padding:0 1px 1px;margin:0 1px;background:transparent;color:#087e75;font:inherit;font-weight:700;line-height:inherit;cursor:pointer;text-align:inherit;border-radius:2px}
+.inline-word:hover,.inline-word:focus-visible{background:#d7f5ed}
+.inline-word ruby{ruby-position:over}
+
+/* Dark mini dictionary, inspired by the reference app but without ads or copied assets */
+.word-quick-backdrop{position:fixed;inset:0;background:rgba(24,31,35,.34);z-index:60}
+.word-quick-backdrop[hidden],.word-quick-extra[hidden]{display:none}
+.word-quick{position:fixed;z-index:61;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));width:min(670px,calc(100% - 30px));max-height:min(77dvh,640px);display:flex;flex-direction:column;overflow:hidden;transform:translate(-50%,120%);visibility:hidden;opacity:0;transition:transform .22s ease,opacity .22s ease,visibility .22s ease;background:#1e1e20;color:#f5f5f5;border:1px solid #4b4b4f;box-shadow:0 18px 55px #0007;border-radius:28px;font-size:15px}
+.word-quick.open{transform:translate(-50%,0);visibility:visible;opacity:1}
+.word-quick-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:25px 27px 9px;flex:none}
+.word-quick-title{font-size:clamp(23px,5vw,31px);font-weight:700;line-height:1.45;word-break:break-word}
+.word-quick-kana{font-size:15px;color:#c9c9cc;margin-top:4px}
+.word-quick-close{border:0;background:transparent;color:#eee;font-size:30px;line-height:1;width:40px;min-height:40px;flex:none}
+.word-quick-info{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 27px 12px;flex:none}
+.word-quick-tag{color:#bdbdc2;font-size:12px;line-height:1.5}
+.word-quick-icons{display:flex;align-items:center;gap:7px}
+.word-quick-icons button{width:43px;height:40px;background:transparent;border:0;color:#fb838f;font-size:29px;line-height:1}
+.word-quick-icons button.active{color:#ffb0ba}
+.word-quick-meaning{padding:13px 27px 22px;overflow:auto;min-height:60px;color:#fafafa;line-height:1.8;font-size:17px;word-break:break-word}
+.word-quick-meaning small{display:block;font-size:12px;color:#c3c3c7;line-height:1.6;margin-bottom:6px}
+.word-quick-extra{padding:0 27px 19px;max-height:28dvh;overflow:auto;color:#e1e1e6;border-top:1px solid #3d3d40;line-height:1.9;font-size:14px}
+.word-quick-extra h3{font-size:14px;color:#ff9aa4;margin:13px 0 6px}
+.word-quick-extra p{margin:6px 0;white-space:pre-wrap}
+.word-quick-footer{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #414145;min-height:64px;flex:none}
+.word-quick-footer>button,.word-quick-footer>a{display:flex;gap:6px;justify-content:center;align-items:center;text-align:center;background:transparent;border:0;color:#f4f4f4;font-size:16px;font-weight:550;min-height:62px;padding:8px}
+.word-quick-footer>a{border-left:1px solid #414145}
+.word-quick-footer>button:hover,.word-quick-footer>a:hover{background:#323236}
+.word-quick-footer>button.active{color:#ffadb3}
+@media(max-width:460px){.word-quick{width:calc(100% - 24px);bottom:calc(12px + env(safe-area-inset-bottom));border-radius:24px}.word-quick-top{padding:20px 20px 7px}.word-quick-info{padding:8px 20px 12px}.word-quick-meaning{padding:8px 20px 18px;font-size:16px}.word-quick-extra{padding:0 20px 15px}.word-quick-footer>button,.word-quick-footer>a{font-size:14px;min-height:57px}}
+

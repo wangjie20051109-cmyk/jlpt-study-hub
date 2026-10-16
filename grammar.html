@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f9fafb">
-<title>语法专项 · JLPT Study Hub</title><link rel="stylesheet" href="./grammar.css?v=20261016g1"></head>
+<title>语法专项 · JLPT Study Hub</title><link rel="stylesheet" href="./grammar.css?v=20261016tapword1"></head>
 <body><main class="app" id="app">
 <header class="topbar">
  <div class="leftmenu"><a class="backpill" href="./strategy.html" aria-label="返回对策页面"><span aria-hidden="true">←</span></a><span class="num-pill" id="counter">1/10</span></div>
@@ -26,6 +26,15 @@
 <div class="sheet-tabs"><button class="sheet-tab active" id="tabExplanation" role="tab" aria-selected="true">解释</button><button class="sheet-tab" id="tabVocab" role="tab" aria-selected="false">词汇</button><button class="sheet-close" id="closeSheet" type="button" aria-label="关闭解释">×</button></div>
 <div class="sheet-content" id="sheetContent" tabindex="0"></div>
 </section>
+<!-- Tap any recognized Japanese word to open a MOJi-inspired quick dictionary card. -->
+<div id="wordQuickBackdrop" class="word-quick-backdrop" hidden></div>
+<section id="wordQuick" class="word-quick" role="dialog" aria-modal="true" aria-labelledby="wordQuickTitle" aria-hidden="true">
+  <div class="word-quick-top"><div><div class="word-quick-title" id="wordQuickTitle">単語</div><div class="word-quick-kana" id="wordQuickKana"></div></div><button id="closeWordQuick" class="word-quick-close" type="button" aria-label="关闭单词速查">×</button></div>
+  <div class="word-quick-info"><div class="word-quick-tag" id="wordQuickTag">N2 · 词汇</div><div class="word-quick-icons"><button id="wordQuickFavorite" type="button" aria-label="收藏这个单词" aria-pressed="false">☆</button><button id="wordQuickPlay" type="button" aria-label="播放日语发音">♬</button></div></div>
+  <div class="word-quick-meaning" id="wordQuickMeaning"></div>
+  <div class="word-quick-extra" id="wordQuickExtra" hidden></div>
+  <div class="word-quick-footer"><button id="wordQuickDetails" type="button">▣ 详情</button><a id="wordQuickDictionary" href="https://jisho.org/" target="_blank" rel="noopener noreferrer">⌕ Jisho词典 ↗</a></div>
+</section>
 <div id="modalBackdrop" class="modal-backdrop" hidden>
 <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
 <div class="modal-header"><h2 id="modalTitle">学习设置</h2><button id="closeModal" class="modal-close" aria-label="关闭">×</button></div>
@@ -37,5 +46,5 @@
 <script src="./grammar_source_n3.js?v=20261016g1000"></script>
 <script src="./grammar_bulk_runtime.js?v=20261016g1000"></script>
 <script src="./grammar_vocab_data.js?v=20261016realwords1"></script>
-<script src="./grammar.js?v=20261016realwords1"></script>
+<script src="./grammar.js?v=20261016tapword1"></script>
 </body></html>

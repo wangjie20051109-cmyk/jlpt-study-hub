@@ -19,7 +19,7 @@ main{max-width:720px;min-height:100vh;margin:auto;padding:16px clamp(25px,6vw,55
 .moreinfo{display:none;margin-top:10px;padding:12px;background:#f7f8fa;border-radius:12px}.moreinfo.visible{display:block}
 @media(max-width:480px){main{padding-top:11px;padding-bottom:180px}.head{padding-top:34px}.section{margin-top:55px}.section h2{margin-bottom:23px}.toolbar{width:calc(100% - 48px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
-</style></head><body>
+</style><link rel="stylesheet" href="./word_popup.css?v=20261016tap1"></head><body>
 <main>
 <header class="top"><button id="back" class="topback" type="button" aria-label="返回背单词列表">‹</button><span class="toplabel">JLPT 单词详解</span><div class="topright"><button id="more" class="smallbtn" type="button" aria-label="查看来源及状态">⋮</button></div></header>
 <section class="head"><div id="word" class="headword">加载单词中…</div><div class="transcript"><span class="romaji" id="romaji"></span><button id="mainSpeak" class="sound" type="button" aria-label="播放单词发音">◖))</button></div><div class="tags"><span class="pos" id="pos">词汇</span><span class="level" id="level">N2</span></div><div id="moreinfo" class="moreinfo"></div></section>
@@ -29,6 +29,14 @@ main{max-width:720px;min-height:100vh;margin:auto;padding:16px clamp(25px,6vw,55
 <div class="detail-meta">词汇题库来源：开放许可资料。例句来自 OpenJLPT／Tatoeba（适用各自授权）。词性为参考标注，读音以日语词典核对为宜。</div>
 </main>
 <div class="bottomwrap"><div class="pager"><button id="prev" class="pagebtn" aria-label="上一个单词">‹</button><b id="position">1/500</b><button id="next" class="pagebtn" aria-label="下一个单词">›</button></div><nav class="toolbar" aria-label="单词功能"><button class="tool" id="note"><span class="ico">▤</span>笔记</button><button class="tool" id="exam"><span class="ico">◎</span>搜试题</button><button class="tool" id="star"><span class="ico" id="starIcon">☆</span>收藏</button><button class="tool" id="listen"><span class="ico" id="listenIcon">▷</span>听学</button></nav></div>
+<!-- Quick dictionary for tapping a word in the main card or example sentences. -->
+<div id="wordQuickBackdrop" class="word-quick-backdrop" hidden></div>
+<section id="wordQuick" class="word-quick" role="dialog" aria-modal="true" aria-labelledby="wordQuickTitle" aria-hidden="true">
+ <div class="word-quick-top"><div><div class="word-quick-title" id="wordQuickTitle"></div><div class="word-quick-kana" id="wordQuickKana"></div></div><button id="closeWordQuick" type="button" class="word-quick-close" aria-label="关闭单词速查">×</button></div>
+ <div class="word-quick-info"><div class="word-quick-tag" id="wordQuickTag"></div><div class="word-quick-icons"><button id="wordQuickFavorite" type="button" aria-label="收藏单词" aria-pressed="false">☆</button><button id="wordQuickPlay" type="button" aria-label="播放发音">♬</button></div></div>
+ <div class="word-quick-meaning" id="wordQuickMeaning"></div><div class="word-quick-extra" id="wordQuickExtra" hidden></div>
+ <div class="word-quick-footer"><button id="wordQuickDetails" type="button">▣ 详情</button><a id="wordQuickDictionary" href="https://jisho.org/" target="_blank" rel="noopener noreferrer">⌕ Jisho词典 ↗</a></div>
+</section>
 <div id="noteDialog" class="dialogback" hidden style="display:none"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="noteTitle"><h2 id="noteTitle">✏️ 单词笔记</h2><p class="muted" id="noteWord"></p><textarea id="noteText" placeholder="写下中文意思、语法要点、自己的例句或记忆方法…"></textarea><div class="dialogactions"><button id="noteCancel">取消</button><button id="noteSave" class="primary">保存笔记</button></div></section></div>
-<script src="./practice_data_n2.js?v=20261016a"></script><script src="./practice_data_n3.js?v=20261016a"></script><script src="./word_examples.js?v=20261016w1"></script><script src="./word_detail.js?v=20261016w1"></script>
+<script src="./practice_data_n2.js?v=20261016a"></script><script src="./practice_data_n3.js?v=20261016a"></script><script src="./word_examples.js?v=20261016w1"></script><script src="./grammar_vocab_data.js?v=20261016realwords1"></script><script src="./word_detail.js?v=20261016tap1"></script>
 </body></html>
