@@ -54,6 +54,7 @@ ruby{ruby-position:over}rt{font-size:.48em;color:#7f8d9c;font-weight:400;user-se
 <div class="panel">
 <div class="filters"><label>考试等级<select id="level"><option value="N2">N2 · 冲刺</option><option value="N3">N3 · 巩固</option></select></label><label>专项类型<select id="type"><option value="all">综合训练</option><option value="grammar">语法</option><option value="vocab">原有文字词汇</option><option value="reading">汉字读音（700题）</option><option value="writing">假名选汉字（300题）</option></select></label></div>
 <div class="mode" role="group" aria-label="练习模式"><button class="active" data-mode="unseen">📝 未做新题</button><button data-mode="all">全部题目</button><button data-mode="wrong">❌ 错题重练</button><button data-mode="star">☆ 收藏夹</button></div>
+<p style="margin:12px 0 0;font-size:13px">🧩 <a href="./grammar.html" style="color:#078c80;font-weight:750">打开全新语法App：四选一 + 上拉解析 + 词汇收藏 →</a></p>
 <div class="summary"><span id="allStat"></span><button id="exportWrong" type="button" style="padding:5px 10px;border:1px solid #dae3ef;border-radius:9px;background:white;color:#3f65a3;font-size:12px">↓ 导出错题笔记</button><label><input id="furigana" type="checkbox" checked> 显示假名</label></div>
 </div>
 <div class="panel" id="workspace" aria-live="polite">
@@ -127,7 +128,7 @@ $('retry').onclick=()=>{delete saved.answers[q.id];justAnsweredId=null;selected=
 if($('mastered'))$('mastered').onclick=()=>{delete saved.wrong[q.id];persist();render()};
 }
 function reset(){idx=0;selected=null;justAnsweredId=null;render()}
-$('level').onchange=reset;$('type').onchange=reset;
+$('level').onchange=reset;$('type').onchange=()=>{if($('type').value==='grammar'){location.href='./grammar.html?level='+$('level').value;return}reset()};
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));reset()});
 $('next').onclick=()=>{if(mode==='unseen'){if(justAnsweredId){justAnsweredId=null;idx=0}else if(idx<pool().length-1)idx++;selected=null;render();return}if(idx<pool().length-1){idx++;selected=null;render()}};
 $('prev').onclick=()=>{if(idx>0){idx--;selected=null;render()}};
@@ -136,6 +137,7 @@ $('exportWrong').onclick=()=>{const w=BANK.filter(q=>saved.wrong[q.id]);if(!w.le
 const qs=new URLSearchParams(location.search);
 if(['N2','N3'].includes(qs.get('level')))$('level').value=qs.get('level');
 if(['all','grammar','vocab','reading','writing'].includes(qs.get('type')))$('type').value=qs.get('type');
+if(qs.get('type')==='grammar'){location.replace('./grammar.html?level='+$('level').value);return;}
 if(['unseen','all','wrong','star'].includes(qs.get('mode')))mode=qs.get('mode');
 document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
 const wanted=qs.get('focus');

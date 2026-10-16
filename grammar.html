@@ -1,0 +1,37 @@
+<!doctype html><html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f9fafb">
+<title>语法专项 · JLPT Study Hub</title><link rel="stylesheet" href="./grammar.css?v=20261016g1"></head>
+<body><main class="app" id="app">
+<header class="topbar">
+ <div class="leftmenu"><a class="backpill" href="./strategy.html" aria-label="返回对策页面"><span aria-hidden="true">←</span></a><span class="num-pill" id="counter">1/10</span></div>
+ <div class="rightmenu">
+ <button class="topicon" id="favorite" type="button" aria-label="收藏这道题" aria-pressed="false"><span class="glyph">♡</span></button>
+ <button class="topicon" id="report" type="button" aria-label="标记题目有问题"><span class="glyph">⚠</span></button>
+ <button class="topicon" id="settings" type="button" aria-label="学习设置"><span class="glyph">⚙</span></button>
+ </div>
+</header>
+<div class="progress" role="progressbar" aria-label="本组练习进度" aria-valuemin="0" aria-valuemax="10" aria-valuenow="1" id="progress"><div id="progressFill"></div></div>
+<div class="head-info"><span class="chip" id="levelLabel">N2 · 语法</span><span class="tiny-status" id="statusText">先阅读题目，再选择正确答案</span></div>
+<section class="question-card" aria-label="题目"><div id="prompt" class="prompt"></div><div class="translate-hint" id="translateHint" hidden></div></section>
+<div class="options" id="choices" role="group" aria-label="四个答案选项"></div>
+<div id="resultCue" class="result-cue" role="status" aria-live="polite"></div>
+<div class="helper-actions"><button id="openExplanation" class="text-btn" disabled>查看解释和词汇 ↑</button><button id="hintToggle" class="text-btn">显示题目中文</button></div>
+<p class="legal">本站语法练习为原创模拟题，非JLPT官方试题。你的答案、错题、收藏和笔记只保存在当前设备浏览器。</p>
+</main>
+<footer class="exam-footer"><button id="overview" class="footer-grid" aria-label="查看全部题号"><span aria-hidden="true">▦</span><small>题号总览</small></button><button id="next" class="footer-next">下一题 <span aria-hidden="true">▶</span></button></footer>
+<button class="floating-note" id="note" type="button" aria-label="给当前题目添加笔记">▤<span class="pencil">✎</span></button>
+<div id="sheetBackdrop" class="sheet-backdrop" hidden></div>
+<section id="sheet" class="sheet" role="dialog" aria-modal="true" aria-label="题目解释与词汇" aria-hidden="true">
+<div id="sheetHandle" class="sheet-handle" role="button" tabindex="0" aria-label="向上拉伸或收起解释"><span></span></div>
+<div class="sheet-tabs"><button class="sheet-tab active" id="tabExplanation" role="tab" aria-selected="true">解释</button><button class="sheet-tab" id="tabVocab" role="tab" aria-selected="false">词汇</button><button class="sheet-close" id="closeSheet" type="button" aria-label="关闭解释">×</button></div>
+<div class="sheet-content" id="sheetContent" tabindex="0"></div>
+</section>
+<div id="modalBackdrop" class="modal-backdrop" hidden>
+<section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<div class="modal-header"><h2 id="modalTitle">学习设置</h2><button id="closeModal" class="modal-close" aria-label="关闭">×</button></div>
+<div id="modalBody" class="modal-content"></div>
+<div id="modalActions" class="modal-actions"></div>
+</section></div>
+<script src="./grammar_data.js?v=20261016g1"></script>
+<script src="./grammar.js?v=20261016g1"></script>
+</body></html>
