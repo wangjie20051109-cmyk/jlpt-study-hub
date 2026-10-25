@@ -31,7 +31,7 @@ if(f.size>100000)throw Error('备份文件超过100KB');
 const b=JSON.parse(await f.text());
 if(b.format!==KEY||!b.items||typeof b.items!=='object'||Array.isArray(b.items))throw Error('格式不符');
 let merged=0;
-const validDate=d=>typeof d==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(d);
+const validDate=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d);
 for(const [id,v] of Object.entries(b.items)){
 if(!/^[a-z0-9][a-z0-9-]{0,90}$/.test(id)||!v||typeof v!=='object'||Array.isArray(v))continue;
 const old=saved[id]&&typeof saved[id]==='object'?saved[id]:{};
