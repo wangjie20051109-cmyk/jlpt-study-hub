@@ -66,7 +66,7 @@ ruby{ruby-position:over}rt{font-size:.48em;color:#7f8d9c;font-weight:400;user-se
 <div class="navBottom"><div class="wrap"><button id="prev">← 上一题</button><button class="next" id="next">下一题 →</button></div></div>
 <script src="./practice_data_n2.js?v=20261016a"></script>
 <script src="./practice_data_n3.js?v=20261016a"></script>
-<script src="./practice_bulk_runtime.js?v=20261016a"></script>
+<script src="./practice_bulk_runtime.js?v=20261104zh1"></script>
 <script>
 (function(){
 'use strict';
@@ -110,8 +110,8 @@ $('correctStat').textContent='已做 '+s.n+' · 答对 '+s.ok;
 if(!arr.length){$('qbody').innerHTML='<div class="empty"><b>这里还没有题目</b><p>切回「全部题目」开始练习，答错的题会自动进入错题本。</p></div>';return}
 let q=arr[idx],old=saved.answers[q.id],ans=old?old.selected:null,done=!!old,chosen=done?ans:selected;
 let body='<div class="qmeta"><span class="tag">'+q.l+' · '+(q.t==='grammar'?'语法':q.t==='reading'?'汉字读音':q.t==='writing'?'汉字书写':'词汇')+'</span><button id="starBtn" class="bookmark '+(saved.star[q.id]?'active':'')+'" aria-label="收藏当前题">'+(saved.star[q.id]?'★':'☆')+'</button></div>'+
-'<div class="qprompt">'+ruby(q.q)+'</div>'+(done?'<div class="trans">'+esc(q.zh)+'</div>':'')+
-'<div class="choices">'+q.o.map((o,i)=>{let cls=done?(i===q.a?' correct':i===ans?' wrong':''):(i===chosen?' selected':'');return '<button class="choice'+cls+'" data-answer="'+i+'" '+(done?'disabled':'')+'><span class="num">'+(i+1)+'</span><span class="jp">'+ruby(o[0])+'</span></button>'}).join('')+'</div>'+
+'<div class="qprompt">'+ruby(q.q)+'</div>'+'<div class="trans">'+esc(q.zh)+'</div>'+
+'<div class="choices">'+q.o.map((o,i)=>{let cls=done?(i===q.a?' correct':i===ans?' wrong':''):(i===chosen?' selected':'');return '<button class="choice'+cls+'" data-answer="'+i+'" '+(done?'disabled':'')+'><span class="num">'+(i+1)+'</span><span class="jp">'+ruby(o[0])+'</span><span style="display:block;font-size:13px;color:#65758c;text-align:left;margin-top:3px">'+esc(o[1])+'</span></button>'}).join('')+'</div>'+
 '<div class="action"><button id="submit" class="primary" '+(done||chosen===null?'disabled':'')+'>'+(done?'已提交':'提交答案')+'</button><button id="retry" '+(!done?'disabled':'')+'>↻ 重练</button></div>';
 if(done){body+='<div class="result"><div class="resultTitle '+(old.correct?'good':'bad')+'">'+(old.correct?'✓ 回答正确！':'✕ 回答错误')+' 正确答案：'+(q.a+1)+' '+ruby(q.o[q.a][0])+'</div>'+
 '<h3 class="explainTitle">📖 语法／词汇重点</h3><div class="point"><b>'+esc(q.pattern)+'</b><div style="margin-top:6px;font-size:14px">'+esc(q.tip)+'</div></div>'+
