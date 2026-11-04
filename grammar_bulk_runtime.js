@@ -43,6 +43,13 @@ function distractors(rows,answer,seed,example){
  if(chosen.length!==4)throw Error('Could not select four unique options for '+answer[0]);
  return shuffled(chosen,seed+'options');
 }
+// Curated Chinese translations; never pass English source glosses off as Chinese.
+const exampleZh={
+'結局、本を読まずじまいになった。':'结果到最后也没能读那本书。',
+'忙しくて、彼に会えずじまいだった。':'因为太忙，最终没能见到他。',
+'言いたいことも言えずじまいだった。':'想说的话最终也没能说出口。'
+};
+function chineseExample(ja){return exampleZh[ja]||'本例句的完整中文翻译尚待校对；请结合下方语法核心义理解。'}
 function asQ(r,level,idx,mode,all){
  const example=r[5][idx%3],ja=example[0],en=example[1]||'',label=visible(r);
  const matched=terms(r[1]).find(t=>t.length>=2&&ja.includes(t));
@@ -66,7 +73,7 @@ function asQ(r,level,idx,mode,all){
    prefix+'而目标语法「'+label+'」主要表示「'+r[2]+'」，二者的表达重点不同。';
   return [visible(row),row[2],why];
  });
- const source='例句原数据的英文参考：'+en;
+ const source='例句中文：'+chineseExample(ja);
  return {
   id:identifier,l:level,t:'grammar',
   q:query,zh:'本题目标语法为「'+label+'」，中文核心意思是「'+r[2]+'」。'+(mode==='example'?source:''),
@@ -74,7 +81,7 @@ function asQ(r,level,idx,mode,all){
   pattern:label+'；接续参考：'+translateFormation(r[4]),
   tip:'重点语法「'+label+'」表示「'+r[2]+'」。请结合例句和接续理解。'+(mode==='meaning'?'题型：语法含义辨析。':'题型：例句语法辨认。'),
   mix:'易混：'+opt.filter((_,i)=>i!==answerIndex).slice(0,3).map(x=>'「'+x[0]+'」表示「'+x[1]+'」').join('；')+'。',
-  ex:ja,exzh:'英文译文（原开源数据）：'+en,
+  ex:ja,exzh:chineseExample(ja),
   // Real vocabulary is resolved separately from the example, not from grammar choices.
   source:'jkindrix-japanese-language-data',
   generated:true,mode,sourceId:r[0]
