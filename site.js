@@ -12,7 +12,10 @@ window.JLPT_SITE={
   read(key,otherwise){try{const x=JSON.parse(localStorage.getItem(key)||'null');return x==null?otherwise:x}catch(e){return otherwise}},
   write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(e){return false}},
   day(date=new Date()){return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-')},
-  speak(value,rate=.88){if(!('speechSynthesis' in window)){alert('当前浏览器不支持语音朗读');return}const synth=window.speechSynthesis;synth.cancel();const u=new SpeechSynthesisUtterance(String(value??''));u.lang='ja-JP';u.rate=rate;const voices=synth.getVoices();const ja=voices.find(v=>/^ja[-_]/i.test(v.lang)&&v.localService)||voices.find(v=>/^ja[-_]/i.test(v.lang));if(ja)u.voice=ja;synth.speak(u)},
+  speak(value,rate=.88){window.JLPT_STUDY?.play(value,{rate,report(message){
+    const status=document.getElementById('word-audio-status');
+    if(status)status.textContent=message;
+  }});},
   vocab(){return ['N2','N3'].flatMap(level=>{const x=window['JLPT_BULK_'+level];return Array.isArray(x)?x.map((a,i)=>({id:level.toLowerCase()+'-'+i,level,word:a[0],kana:a[1],meaning:a[2]})):[]})},
   ruby(word,kana){return '<ruby>'+this.safe(word)+'<rt>'+this.safe(kana)+'</rt></ruby>'}
 };

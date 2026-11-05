@@ -204,7 +204,7 @@ function showWord(w,update=true){
  detail=w;level=w.level;index=w.index??0;
  if(playing)stop();
  const extra=EXAMPLES[w.id]||{},cn=ZH[w.word],extraText=extra.gloss||w.meaning;
- $('word').textContent=w.word;
+ $('word').innerHTML=window.JLPT_STUDY.rich('['+w.word+'|'+w.kana+']');
  $('word').setAttribute('role','button');$('word').tabIndex=0;
  $('word').setAttribute('aria-label','点击查看 '+w.word+' 的单词速查卡');
  const r=extra.romaji||romaji(w.kana);
@@ -245,11 +245,11 @@ function showWord(w,update=true){
 }
 function navigate(delta){if(!detail||detail.demo)return;const n=index+delta;if(n<0||n>=arr[level].length)return;showWord(arr[level][n]);}
 function speak(text){
- if(!('speechSynthesis' in window))return alert('当前浏览器不支持语音朗读');
- speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(String(text||'').replace(/([\u3400-\u9fff々ヶ]+)\(([ぁ-ゖー]+)\)/g,'$1'));
- utterance.lang='ja-JP';utterance.rate=.86;window.speechSynthesis.speak(utterance);
+ const value=String(text||'').replace(/([\u3400-\u9fff々ヶ]+)\(([ぁ-ゖー]+)\)/g,'$1');
+ window.JLPT_STUDY.play(value,{rate:.86,report:message=>{$('listen').title=message;}});
 }
-function stop(){playing=false;if('speechSynthesis' in window)speechSynthesis.cancel();$('listenIcon').textContent='▷';$('listen').classList.remove('active')}
+
+function stop(){playing=false;window.JLPT_STUDY.stop();$('listenIcon').textContent='▷';$('listen').classList.remove('active')}
 function listen(){
  if(playing){stop();return}
  if(!('speechSynthesis' in window))return alert('浏览器未提供语音朗读功能');
@@ -258,10 +258,17 @@ function listen(){
  const extra=EXAMPLES[w.id]||{},examples=curated[w.word]||[];
  const targets=[w.word,examples[0]?.ja||extra.ja||'',w.word].filter(Boolean);
  let p=0;
- function run(){if(!playing||detail!==w)return;if(p>=targets.length){stop();return}
-  const u=new SpeechSynthesisUtterance(targets[p++].replace(/([\u3400-\u9fff々ヶ]+)\(([ぁ-ゖー]+)\)/g,'$1'));u.lang='ja-JP';u.rate=.83;u.onend=run;u.onerror=()=>stop();speechSynthesis.speak(u);
+ function run(){
+  if(!playing||detail!==w)return;
+  if(p>=targets.length){stop();return}
+  const value=targets[p++].replace(/([\u3400-\u9fff々ヶ]+)\(([ぁ-ゖー]+)\)/g,'$1');
+  window.JLPT_STUDY.play(value,{rate:.83,report:message=>{
+   $('listen').title=message;
+   if(message==='播放完成')run();
+   else if(/失败|无法|没有启动/.test(message))stop();
+  }});
  }
- speechSynthesis.cancel();run();
+ run();
 }
 const requested=params.get('id'),found=requested==='demo-iraira'?demo:[...arr.N2,...arr.N3].find(x=>x.id===requested);
 showWord(found||arr.N2[0],false);

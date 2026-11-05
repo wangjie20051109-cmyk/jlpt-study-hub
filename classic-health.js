@@ -66,7 +66,8 @@ function sectionButton(section){
  return [...document.querySelectorAll('[data-p]')].find(b=>b.getAttribute('data-p')===section)||null;
 }
 function navigate(){
- const section=new URLSearchParams(location.search).get('section');
+ const requested=new URLSearchParams(location.search).get('section');
+ const section=({reading:'read',listening:'listen',podcast:'pod',practice:'quiz'})[requested]||requested;
  if(!section||state.navigation===section)return;
  const btn=sectionButton(section),node=document.getElementById(section);
  if(btn){btn.click();state.navigation=section;return}

@@ -1,19 +1,59 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f7f8fa"><title>JLPT Study Hub · 学习首页</title><link rel="stylesheet" href="./site.css?v=20261016m1"></head>
-<body><main class="shell">
-<header class="topline"><div class="brand"><span class="brandmark">日</span><div><strong>JLPT Study Hub</strong><small>你的日语备考学习中心</small></div></div><span class="grow"></span><span class="chip" id="days">2026年12月 N2</span></header>
-<section class="hero hero-warm"><span class="eyebrow">ONE HOME · FOUR MODULES</span><h1>每天进步一点，<br>离 N2 合格更近一点。</h1><p>单词、语法、考试、复习分开管理，所有入口都在这里。</p><div class="actions" style="margin-top:19px"><a href="./words.html" class="btn primary">开始今天的背词 →</a><a href="./practice.html" class="btn">继续刷题</a></div></section>
-<section class="stats-grid" aria-label="个人学习数据"><div class="stat"><strong id="sumWords">0</strong><span>已学习词汇</span></div><div class="stat"><strong id="sumQuiz">0</strong><span>累计做题</span></div><div class="stat"><strong id="sumWrong">0</strong><span>待复习错题</span></div></section>
-<div class="section-title"><h2>四大学习模块</h2><small>点击进入独立网站</small></div>
-<section class="menu-grid">
-<a class="card module" href="./strategy.html"><div class="module-icon" style="background:#eef3ff;color:#4b6cc8">🎯</div><span class="arrow">↗</span><div><h3>对策训练</h3><p>N2/N3 · 词汇、语法、阅读、听力专项学习</p></div></a>
-<a class="card module" href="./words.html"><div class="module-icon" style="background:#fff2ee;color:#ec3d2c">📖</div><span class="arrow">↗</span><div><h3>背单词</h3><p>1000词库 · 新学、复习、词条详情与发音</p></div></a>
-<a class="card module" href="./practice.html"><div class="module-icon" style="background:#edfaf4;color:#179b80">📝</div><span class="arrow">↗</span><div><h3>考试刷题</h3><p>1018道练习 · 四选一判分、解析和错题本</p></div></a>
-<a class="card module" href="./my.html"><div class="module-icon" style="background:#fff7e4;color:#9e7627">📊</div><span class="arrow">↗</span><div><h3>我的学习</h3><p>学习进度 · 收藏、错题统计与数据备份</p></div></a>
-</section>
-<section class="card" style="margin-top:15px;display:flex;align-items:center;justify-content:space-between;gap:15px;background:linear-gradient(110deg,#eaf4ff,#fff)"><div><h3 style="margin-bottom:4px">🎧 独立听力训练</h3><div style="font-size:13px;color:#677484">N2/N3听力考试 · 精听听写 · 影子跟读 · GitHub开源素材</div></div><a class="btn primary" style="flex:none" href="./listening.html">进入听力 ↗</a></section>
-<section class="card" style="margin-top:15px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(110deg,#e8faf8,#fff)"><div><h3 style="margin-bottom:4px">🧩 语法App · 新界面</h3><div style="font-size:13px;color:#657578">1025道语法练习 · 上拉解析／词汇 · 收藏笔记</div></div><a class="btn primary" style="background:#0ab2a3;border-color:#0ab2a3;flex:none" href="./grammar.html">开始练习 ↗</a></section><section class="card" style="margin-top:15px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:linear-gradient(110deg,#fff0f5,#fff)"><div><h3 style="margin-bottom:4px">💗 今日好き · 日本年轻人恋爱口语</h3><div style="font-size:13px;color:#657578">50条不重复表达 · 节目报道出处／原创练习标识 · 收藏、间隔复习、备份与小测</div></div><a class="btn primary" style="background:#db5986;border-color:#db5986;flex:none" href="./youth-notebook.html">进入摘抄本 ↗</a></section>
-<div class="section-title"><h2>保留旧版功能</h2></div><section class="card"><div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><h3 style="margin-bottom:3px">经典学习站</h3><div class="muted" style="font-size:13px">原有单词、语法、阅读、播客和复习继续保留；听力考试与跟读已迁移到独立界面。</div></div><a href="./classic.html" class="btn ghost">打开旧版 ↗</a></div></section>
-<p class="notice">提醒：新增的1000道词汇题是基于MIT许可开源词表制作的模拟练习，不是JLPT官方历年真题。学习进度默认只保存在当前浏览器；换设备前可在「我的学习」导出备份。</p>
-</main><script src="./site.js?v=20261016m1"></script>
-<script>(function(){const S=window.JLPT_SITE;const v=S.read('jlptWordsModuleV1',{});const entries=Object.values(v.items||{});const q=S.read('jlptPracticeV2State',{});const answers=Object.keys(q.answers||{}).length;const wrong=Object.values(q.wrong||{}).filter(Boolean).length;document.getElementById('sumWords').textContent=entries.filter(x=>x&&x.seen).length;document.getElementById('sumQuiz').textContent=answers;document.getElementById('sumWrong').textContent=wrong;const time=new Date('2026-12-06T00:00:00+09:00').getTime();const days=Math.ceil((time-Date.now())/86400000);document.getElementById('days').textContent=days>0?'距2026年12月N2 '+days+'天':'2026年12月N2备考'} )();</script></body></html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fa">
+  <title>JLPT Study Hub · N2 每日学习</title>
+  <link rel="stylesheet" href="./site.css?v=study-loop1">
+  <link rel="stylesheet" href="./study/study.css?v=1">
+</head>
+<body>
+<main class="shell study-shell">
+  <header class="topline study-header">
+    <a class="brand" href="./" aria-label="JLPT Study Hub 首页">
+      <span class="brandmark" aria-hidden="true">日</span>
+      <span><strong>JLPT Study Hub</strong><small>N2 每日学习</small></span>
+    </a>
+    <button class="btn study-toggle" type="button" data-furigana-toggle aria-pressed="true">带平假名</button>
+  </header>
+  <div id="study-home">
+    <section class="hero study-hero">
+      <div>
+        <p class="eyebrow" id="study-date">JLPT N2 · 日本时间</p>
+        <h1>今天学什么？</h1>
+        <p>每天学一点。错过的题，按时间回来再做。</p>
+        <a class="btn primary" id="study-next" href="#learn-words">开始今日学习 <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="study-hero-progress">
+        <span>今日任务</span>
+        <strong id="study-progress">0 / 5</strong>
+        <progress id="study-bar" max="5" value="0" aria-label="今日任务完成数"></progress>
+        <small id="study-streak">连续学习 0 天</small>
+      </div>
+    </section>
+    <div class="section-title"><h2>今日任务</h2><a class="btn" href="#review">打开错题本</a></div>
+    <section id="study-tasks" class="study-task-grid" aria-label="今日任务列表"></section>
+    <div class="section-title"><h2>学习记录</h2><a class="btn" href="#favorites">查看收藏</a></div>
+    <section id="study-stats" aria-label="学习统计"></section>
+    <div class="section-title"><h2>四站入口</h2></div>
+    <section class="menu-grid study-links">
+      <a class="card study-link" href="./strategy.html"><span class="study-icon tone-purple">◎</span><span><strong>对策训练</strong><small>语法、阅读、听力专项</small></span><b aria-hidden="true">↗</b></a>
+      <a class="card study-link" href="./words.html"><span class="study-icon tone-red">あ</span><span><strong>背单词</strong><small>词库、词条、例句与发音</small></span><b aria-hidden="true">↗</b></a>
+      <a class="card study-link" href="./practice.html"><span class="study-icon tone-green">✓</span><span><strong>考试刷题</strong><small>N2 / N3 原有题库</small></span><b aria-hidden="true">↗</b></a>
+      <a class="card study-link" href="./my.html"><span class="study-icon tone-gold">◇</span><span><strong>我的学习</strong><small>进度、收藏与数据备份</small></span><b aria-hidden="true">↗</b></a>
+    </section>
+    <section class="study-more" aria-label="原有学习内容">
+      <a href="./grammar.html">语法练习库</a><a href="./listening.html">完整听力训练</a><a href="./youth-notebook.html">今日喜欢上你了 · 口语摘抄本</a><a href="./classic.html">经典学习站</a>
+    </section>
+    <p class="notice">学习记录保存在当前浏览器。每日训练使用可重复练习的自编题与原站素材，非 JLPT 官方试题。</p>
+  </div>
+  <section id="study-view" aria-label="学习练习" hidden></section>
+  <p class="study-message" id="study-error" role="status" hidden></p>
+  <noscript>请启用 JavaScript 以加载每日任务。</noscript>
+</main>
+<script src="./study/shared.js?v=1"></script>
+<script src="./site.js?v=study-loop1"></script>
+<script type="module" src="./study/app.js?v=1"></script>
+</body>
+</html>

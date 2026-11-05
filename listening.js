@@ -99,7 +99,7 @@ function answerQuiz(chosen){
  $('quizOpts').querySelectorAll('[data-choice]').forEach(b=>{const i=+b.dataset.choice;b.disabled=true;if(i===cur.a)b.classList.add('ok');else if(i===chosen)b.classList.add('no')});
  if(!seen.includes(cur.id))seen.push(cur.id);
  if(chosen===cur.a)wrong=wrong.filter(x=>x!==cur.id);else if(!wrong.includes(cur.id))wrong.push(cur.id);
- save(SEENKEY,seen);save(WRONGKEY,wrong);
+ save(SEENKEY,seen);save(WRONGKEY,wrong);window.JLPT_STUDY.submit('listening:'+cur.id,chosen===cur.a);
  const full=cur.text.replace(/(女：|男：)/g,'\n$1').trim();
  const reasons=cur.opts.map((v,i)=>'<div class="annotation">'+(i===cur.a?'✓':'✕')+' '+(i+1)+'. '+html(v)+'<div class="mini">'+(i===cur.a?'符合对话中的决定或关键信息。':'不符合原文的关键时间、原因、人物或主要结论，请对照原句排除。')+'</div></div>').join('');
  $('quizAnswer').innerHTML='<h3>'+(chosen===cur.a?'✓ 回答正确':'✕ 回答错误')+'</h3><p><b>正确答案：'+(cur.a+1)+'. '+html(cur.opts[cur.a])+'</b></p><h3>完整听力原文</h3><div class="jp-script">'+html(full)+'</div><h3>中文解析</h3><div class="annotation">'+html(explanation[cur.id]||cur.why)+'</div><h3>日语解析</h3><div class="annotation">'+html(cur.why)+'</div><h3>全部选项</h3>'+reasons;
@@ -203,7 +203,7 @@ function answerWord(chosen){
  if(!audioWordState.seen.includes(x.id))audioWordState.seen.push(x.id);
  audioWordState.wrong=audioWordState.wrong.filter(id=>id!==x.id);
  if(!correct)audioWordState.wrong.push(x.id);
- save(AUDIOWORDKEY,audioWordState);
+ save(AUDIOWORDKEY,audioWordState);window.JLPT_STUDY.submit('audio-word:'+x.id,correct);
  $('wordListenOpts').querySelectorAll('[data-wordchoice]').forEach(b=>{b.disabled=true;if(+b.dataset.wordchoice===x.index)b.classList.add('ok');else if(+b.dataset.wordchoice===chosen)b.classList.add('no')});
  $('wordListenAnswer').innerHTML='<h3>'+(correct?'✓ 听对了':'✕ 需要复习')+'</h3><div class="jp-script">'+html(x.row[0])+'（'+html(x.row[1])+'）</div><p class="translation">英文释义：'+html(x.row[2])+'</p><p class="mini">本题为听音辨词练习，发音来源与设备语音包有关。</p>';
  $('wordListenAnswer').classList.remove('hidden');

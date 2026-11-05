@@ -16,8 +16,8 @@ function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));return 
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function strip(s){return String(s??'').replace(/\[([^\]|]+)\|([^\]]+)\]/g,'$1')}
 function furigana(s,decorate=false){
- let x=safe(s).replace(/\[([^|\]]+)\|([^\]]+)\]/g,(_,word,kana)=>'<ruby'+(decorate?' class="keyterm"':'')+'>'+word+'<rt>'+kana+'</rt></ruby>');
- return x;
+ const html=window.JLPT_STUDY.rich(s);
+ return decorate?html.replaceAll('<ruby>','<ruby class="keyterm">'):html;
 }
 function typedVocab(q){
  // Vocabulary contains *real lexical words from the sentence*, never the four grammar choices.
@@ -170,8 +170,7 @@ function selection(q){return session().selections[q.id]??null}
 function done(q){return selection(q)!==null}
 function toast(t){$('resultCue').textContent=t}
 function speak(value){
- if(!('speechSynthesis' in window)){toast('此设备不支持日语朗读');return}
- try{speechSynthesis.cancel();const utter=new SpeechSynthesisUtterance(strip(value));utter.lang='ja-JP';utter.rate=.88;const voices=speechSynthesis.getVoices().filter(v=>v.lang?.toLowerCase().startsWith('ja'));if(voices.length)utter.voice=voices[0];speechSynthesis.speak(utter)}catch(e){toast('语音播放失败，请检查日语语音包')}
+ window.JLPT_STUDY.play(value,{report:toast});
 }
 function syncLegacy(q,chosen,ok){
  if(!/^n[23]-\d{2}$/.test(q.id))return;
@@ -187,7 +186,7 @@ function syncLegacy(q,chosen,ok){
 function render(){
  const q=question();if(!q)return;
  const s=session(),sel=selection(q),answered=sel!==null,ok=sel===q.a;
- document.body.classList.toggle('ruby-off',!state.prefs.furigana);
+ document.body.classList.toggle('ruby-off',!window.JLPT_STUDY.hasFurigana());
  $('counter').textContent=(s.index+1)+'/'+s.ids.length;
  $('progress').setAttribute('aria-valuemax',String(s.ids.length));$('progress').setAttribute('aria-valuenow',String(s.index+1));
  $('progressFill').style.width=((s.index+1)/s.ids.length*100)+'%';
@@ -219,7 +218,7 @@ function answer(idx){
  session().selections[q.id]=idx;
  state.answers[q.id]={selected:idx,correct:yes,at:Date.now()};
  if(yes)delete state.wrong[q.id];else state.wrong[q.id]=true;
- syncLegacy(q,idx,yes);persist();render();
+ window.JLPT_STUDY.submit('grammar:'+q.id,yes);syncLegacy(q,idx,yes);persist();render();
  if(state.prefs.autoExplain)openSheet('explain');
  if(state.prefs.autoSound)speak(q.o[q.a][0]);
 }
@@ -342,13 +341,13 @@ function openSettings(){
   {text:'取消',fn:closeModal},
   {text:'保存设置',primary:true,fn:()=>{
     const old=state.prefs.level,next=$('settingLevel').value;
-    state.prefs.furigana=$('settingRuby').checked;state.prefs.autoExplain=$('settingAuto').checked;state.prefs.autoSound=$('settingSound').checked;
+    state.prefs.furigana=$('settingRuby').checked;window.JLPT_STUDY.setFurigana(state.prefs.furigana);state.prefs.autoExplain=$('settingAuto').checked;state.prefs.autoSound=$('settingSound').checked;
     state.prefs.level=next;
     if(next!==old)createSession(next,'all');
     persist();closeModal();render();
   }}
  ]);
- $('settingLevel').value=pref.level;$('settingRuby').checked=!!pref.furigana;$('settingAuto').checked=!!pref.autoExplain;$('settingSound').checked=!!pref.autoSound;
+ $('settingLevel').value=pref.level;$('settingRuby').checked=window.JLPT_STUDY.hasFurigana();$('settingAuto').checked=!!pref.autoExplain;$('settingSound').checked=!!pref.autoSound;
 }
 $('next').onclick=next;$('overview').onclick=openOverview;$('favorite').onclick=toggleFavorite;$('report').onclick=openReport;$('settings').onclick=openSettings;$('note').onclick=openNote;$('openExplanation').onclick=()=>openSheet('explain');
 $('hintToggle').onclick=()=>{const el=$('translateHint');el.hidden=!el.hidden;$('hintToggle').textContent=el.hidden?'显示题目中文':'隐藏题目中文'};

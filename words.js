@@ -1,7 +1,7 @@
 /* Standalone vocabulary learning website powered by the existing 1000-item MIT dataset. */
 (function(){
 'use strict';
-const H=window.JLPT_SITE,KEY='jlptWordsModuleV1',MS=86400000,all=H.vocab(),$=id=>document.getElementById(id);
+const H=window.JLPT_SITE,study=window.JLPT_STUDY,KEY='jlptWordsModuleV1',MS=86400000,all=H.vocab(),$=id=>document.getElementById(id);
 let db=H.read(KEY,{items:{},days:{}}),level='N2',filter='all',shown=30,queue=[],current=null,mode='new',detail=null;
 if(!db||typeof db!=='object')db={items:{},days:{}};
 db.items=db.items||{};db.days=db.days||{};
@@ -41,7 +41,7 @@ function list(){
  $('listStats').textContent=arr.length+'个词';
  $('wordList').innerHTML=part.length?part.map(w=>{
    const state=get(w.id),label=state.mastered?'已掌握':hasDue(w)?'待复习':state.seen?'已学习':'未学';
-   return '<button class="listrow" type="button" data-id="'+H.safe(w.id)+'"><div style="min-width:0;flex:1"><div class="name">'+H.safe(w.word)+' <span class="muted" style="font-size:13px;font-weight:450">'+H.safe(w.kana)+'</span></div><div class="desc">'+H.safe(w.meaning)+'</div></div><span class="chip">'+(state.starred?'★ ':'')+label+'</span><span aria-hidden="true">›</span></button>'
+   return '<button class="listrow" type="button" data-id="'+H.safe(w.id)+'"><div style="min-width:0;flex:1"><div class="name">'+study.rich('['+w.word+'|'+w.kana+']')+'</div><div class="desc">'+H.safe(w.meaning)+'</div></div><span class="chip">'+(state.starred?'★ ':'')+label+'</span><span aria-hidden="true">›</span></button>'
  }).join(''):'<div class="card empty">这个筛选下还没有词汇。</div>';
  $('wordList').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>openDetail(all.find(w=>w.id===b.dataset.id)));
  $('moreWords').hidden=arr.length<=shown;
@@ -55,7 +55,7 @@ function start(which){
 function advance(){
  current=queue.shift()||null;
  if(!current){closeStudy();summary();list();alert('这一组学习完成啦！🎉');return}
- $('studyWord').textContent=current.word;
+ $('studyWord').innerHTML=study.rich('['+current.word+'|'+current.kana+']');
  $('studyKana').textContent=current.kana;
  $('studyMeaning').textContent='英文释义：'+current.meaning;
  $('studyAnswer').style.display='none';$('rateActions').style.display='none';$('reveal').style.display='block';
@@ -101,5 +101,5 @@ $('detailSave').onclick=()=>alterDetail('save');$('detailKnown').onclick=()=>alt
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detail)closeDetail()});
 const params=new URLSearchParams(location.search);
 if(['N2','N3'].includes(params.get('level')))level=params.get('level');
-summary();list();
+study.applyFurigana();summary();list();
 })();
