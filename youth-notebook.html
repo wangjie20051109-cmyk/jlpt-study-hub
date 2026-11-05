@@ -59,7 +59,7 @@ save();render();el('stats').textContent+=' · 已安全合并 '+merged+' 条（�
 finally{e.target.value=''}
 });
 
-const QS=[{"q":"「他（ほか）のメンバーより気持（きも）ちで勝（か）ってる」の「より」表示什么？","opts":["原因","比较基准","时间起点","逆接"],"answer":1,"why":"「AよりB」表示与A相比更……；「勝（か）ってる」是「勝（か）っている」的口语缩约。"},{"q":"「気持（きも）ちの整理（せいり）がついてないんだ」最自然的意思是？","opts":["已经决定交往","还没有理清自己的心情","正在整理行李","对方已经拒绝"],"answer":1,"why":"「気持（きも）ちの整理（せいり）がつく」指理清感情；「～てない」是「～ていない」的口语缩约。"},{"q":"听到「めっちゃドキドキした」，最贴近的意思是？","opts":["非常无聊","心跳得厉害","有点困","十分生气"],"answer":1,"why":"「ドキドキする」表示心跳加速；「めっちゃ」是很随意的「非常」。"}];
+const QS=[{"q":"「他（ほか）のメンバーより気持（きも）ちで勝（か）ってる」の「より」表示什么？","opts":["原因","比较基准","时间起点","逆接"],"answer":1,"why":"「AよりB」表示与A相比更……；「勝（か）ってる」是「勝（か）っている」的口语缩约。"},{"q":"「気持（きも）ちの整理（せいり）がついてないんだ」最自然的意思是？","opts":["还没有理清自己的心情","已经决定交往","正在整理行李","对方已经拒绝"],"answer":0,"why":"「気持（きも）ちの整理（せいり）がつく」指理清感情；「～てない」是「～ていない」的口语缩约。"},{"q":"听到「めっちゃドキドキした」，最贴近的意思是？","opts":["非常无聊","有点困","十分生气","心跳得厉害"],"answer":3,"why":"「ドキドキする」表示心跳加速；「めっちゃ」是很随意的「非常」。"}];
 el('quiz').innerHTML=QS.map((q,i)=>'<section data-q="'+i+'"><p><b>'+(i+1)+'. '+q.q+'</b></p>'+q.opts.map((o,j)=>'<button class="btn" data-choice="'+j+'">'+safe(o)+'</button>').join('')+'<p class="muted" aria-live="polite"></p></section>').join('');
 el('quiz').addEventListener('click',e=>{let b=e.target.closest('button[data-choice]');if(!b||b.disabled)return;let s=b.closest('[data-q]'),q=QS[+s.dataset.q],chosen=+b.dataset.choice;s.querySelectorAll('button').forEach(z=>{z.disabled=true;if(+z.dataset.choice===q.answer)z.classList.add('correct');else if(+z.dataset.choice===chosen)z.classList.add('wrong')});s.querySelector('[aria-live]').textContent=(chosen===q.answer?'答对了！':'答错了。')+q.why});
 render();})();</script></body></html>
