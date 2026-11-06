@@ -125,7 +125,7 @@
       const voices = synth.getVoices().filter(voice => /^ja(?:[-_]|$)/i.test(voice.lang));
       if (voices.length) utterance.voice = voices.find(voice => voice.localService) || voices[0];
       utterance.onstart = () => { if (token === generation) { clearTimeout(timeout); report('正在播放设备日语语音'); } };
-      utterance.onend = () => { if (token === generation) report('播放完成'); };
+      utterance.onend = () => { if (token === generation) { clearTimeout(timeout); report('播放完成'); } };
       utterance.onerror = () => { if (token === generation) { clearTimeout(timeout); report('日语朗读失败。请检查设备的日语语音包后再次轻触。'); } };
       report('正在启动日语语音…');
       timeout = setTimeout(() => {
