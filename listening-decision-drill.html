@@ -6,4 +6,28 @@ const data=[
 {jp:"男：発表（はっぴょう）の順番（じゅんばん）は決（き）めたよ。女：じゃあ、みんなに知（し）らせる前（まえ）に、先生（せんせい）に確認（かくにん）してもらおう。",zh:"男：发表顺序定好了。女：那在通知大家之前，先请老师确认吧。",opts:["先生（せんせい）に確認（かくにん）してもらう｜请老师确认","順番（じゅんばん）を決（き）める｜决定顺序","発表（はっぴょう）を中止（ちゅうし）する｜取消发表","全員（ぜんいん）にすぐ知（し）らせる｜立即通知所有人"],a:0,why:"顺序已定；「知らせる前に」说明通知之前还有确认步骤。"},
 {jp:"女：予約（よやく）は取（と）れましたが、時間（じかん）が変更（へんこう）になりました。男：そうですか。では、参加者（さんかしゃ）に新（あたら）しい時間（じかん）を伝（つた）えてください。",zh:"女：已经订好了，但时间变更了。男：这样啊。那么请通知参加者新的时间。",opts:["予約（よやく）を取（と）る｜预订","時間（じかん）を元（もと）に戻（もど）す｜把时间改回去","参加者（さんかしゃ）に伝（つた）える｜通知参加者","参加者（さんかしゃ）を減（へ）らす｜减少参加者"],a:2,why:"「予約は取れました」已完成；「伝えてください」是明确指示。"}];
 const host=document.getElementById("questions");data.forEach((q,i)=>{const e=document.createElement("article");const h=document.createElement("h2");h.textContent="第"+(i+1)+"题";e.append(h);const p=document.createElement("p");p.textContent=q.jp;e.append(p);const prompt=document.createElement("strong");prompt.textContent="接下来首先应该做什么？";e.append(prompt);const area=document.createElement("div"),result=document.createElement("p");result.setAttribute("role","status");q.opts.forEach((o,j)=>{const b=document.createElement("button");b.textContent=(j+1)+". "+o;b.onclick=()=>{result.className=j===q.a?"good":"bad";result.textContent=(j===q.a?"正确。":"再看关键句。正确答案："+(q.a+1)+"。")+q.why};area.append(b)});e.append(area,result);const d=document.createElement("details"),s=document.createElement("summary");s.textContent="展开中文翻译与解题提示";d.append(s);const z=document.createElement("p");z.textContent=q.zh+" "+q.why;d.append(z);e.append(d);host.append(e)});
+
+/* Browser-native Japanese speech for the five original practice dialogues.
+   The audio is synthesized locally by the browser, not a prerecorded JLPT recording. */
+(function(){
+  const supported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  const note=document.createElement('p');
+  note.textContent=supported?'音频为浏览器日语语音合成，非JLPT原声；可先听后看题。':'当前浏览器不支持语音合成，请使用文字练习。';
+  host.parentNode.insertBefore(note,host);
+  if(!supported)return;
+  const clean=s=>s.replace(/([\u3400-\u9fff々]+)（([ぁ-ゖー]+)）/g,'$2').replace(/｜[^。！？]+/g,'');
+  [...host.querySelectorAll('article')].forEach((article,i)=>{
+    const play=document.createElement('button');
+    play.type='button'; play.textContent='▶ 播放日语'; play.setAttribute('aria-label','播放第'+(i+1)+'题日语对话');
+    play.addEventListener('click',()=>{
+      window.speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(clean(data[i].jp));
+      u.lang='ja-JP';u.rate=.85;
+      u.onerror=()=>{play.textContent='语音播放失败，请检查浏览器语音设置';};
+      window.speechSynthesis.speak(u);
+    });
+    article.insertBefore(play,article.querySelector('strong'));
+  });
+  window.addEventListener('pagehide',()=>window.speechSynthesis.cancel());
+})();
 </script></body></html>
